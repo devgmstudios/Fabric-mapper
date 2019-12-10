@@ -48,7 +48,7 @@ body {
   text-align: center;
 }
 
-#file {
+#bg_image {
   width: .1px;
   height: .1px;
   opacity: 0;
@@ -67,4 +67,8 @@ body {
   cursor: pointer;
   padding: .5em 1em;
   margin: 5px;
+}
+
+.main-container {
+  padding: 2em 0;
 }
