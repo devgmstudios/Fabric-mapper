@@ -1,74 +1,10 @@
 body {
+  margin-top: 30px;
+  margin-bottom: 30px;
   background: #f2f2f2;
-  font-size: 16px;
-  color: #7f8c8d;
 }
 
 .canvas-container {
   margin-right: auto;
   margin-left: auto;
-}
-
-.header {
-  padding: 2.5em 0;
-  text-align: center;
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.10);
-  background: #2d3e50;
-}
-
-.helper {
-  display: inline-block;
-  vertical-align: middle;
-  font-size: 25px;
-  color: #fff;
-  text-align: left;
-}
-
-.splash-container {
-  background: #1f8dd6;
-  padding: 5em 0;
-}
-
-.splash-head {
-  color: white;
-  letter-spacing: .05em;
-  opacity: .8;
-  font-size: 16px;
-  text-align: center;
-}
-
-.splash {
-  display: flex;
-  justify-content: center;
-}
-
-.foot-container {
-  background: #111;
-  padding: 1em;
-  text-align: center;
-}
-
-#bg_image {
-  width: .1px;
-  height: .1px;
-  opacity: 0;
-  overflow: hidden;
-  position: absolute;
-  z-index: -1;
-}
-
-.pure-button {
-  background: white;
-  color: #1f8dd6;
-  border-radius: 5px;
-  font-size: 120%;
-  text-transform: uppercase;
-  white-space: nowrap;
-  cursor: pointer;
-  padding: .5em 1em;
-  margin: 5px;
-}
-
-.main-container {
-  padding: 2em 0;
 }
