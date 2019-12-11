@@ -6,6 +6,7 @@ let number
 const grid = 8
 const backgroundColor = '#f8f8f8'
 const lineStroke = '#ebebeb'
+const lineStroke2 = 'rgba(192,192,192, 0.7)' 
 const tableFill = 'rgba(255,0, 0, 0.4)'
 const tableStroke = 'rgba(255,0, 0, 0.5)'
 const tableShadow = 'rgba(0, 0, 0, 0.4) 3px 3px 7px'
@@ -33,6 +34,75 @@ function initCanvas() {
     canvas.clear()
     canvas.dispose()
   }
+  
+  
+  
+  
+  
+  function drawGrid(cellSize, gridWidth, gridHeight, xPos, yPos) {
+
+    var bkgndrect = new fabric.Rect({
+        width: gridWidth + 50,
+        height: gridHeight + 50,
+        stroke: lineStroke2,
+        fill: 'transparent',
+        selectable: false
+    });
+
+    var rect = new fabric.Rect({
+        left: 25,
+        top: 25,
+        width: gridWidth,
+        height: gridHeight,
+        stroke: lineStroke2,
+        fill: 'transparent',
+        selectable: false
+    });
+
+    var gridGroup = new fabric.Group([bkgndrect, rect], {
+        left: xPos,
+        top: yPos,
+        selectable: false
+    });
+
+    canvas.add(gridGroup);
+
+    for (var i = 1; i < (gridWidth / cellSize); i++) {
+        var line = new fabric.Line([0, 0, 0, gridHeight], {
+            left: (gridWidth / 2) - i * cellSize,
+            top: -gridHeight / 2,
+            stroke: lineStroke2,
+            selectable: false
+        });
+        gridGroup.add(line);
+    }
+
+ 
+
+    for (var i = 0; i < (gridWidth / cellSize); i++) {
+        var text = new fabric.Text(String((i) * 5), {
+            left: -(gridWidth / 2) + i * cellSize,
+            top: -(gridHeight / 2) - 20,
+            fontSize: 14,
+            selectable: false
+        });
+        gridGroup.add(text);
+    }
+
+    for (var i = 0; i < (gridHeight / cellSize); i++) {
+        var text = new fabric.Text(String((i) * 5), {
+            left: -(gridWidth / 2) - 20,
+            top: -(gridHeight / 2) + (i) * cellSize,
+            fontSize: 14,
+            textAlign: 'right',
+            selectable: false
+        });
+        gridGroup.add(text);
+    }
+        sendLinesToBack()
+    canvas.renderAll();
+}
+
   
   
   
@@ -76,7 +146,8 @@ function initCanvas() {
   canvas.backgroundColor = backgroundColor
   canvas.setBackgroundImage('bg2.jpg', canvas.renderAll.bind(canvas));
  
- 
+  
+// drawGrid(50, 4320, 1350, 0, 0);
 
 canvas.on('object:moving', function(options) { 
   options.target.set({
