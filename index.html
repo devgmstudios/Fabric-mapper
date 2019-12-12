@@ -40,12 +40,12 @@
                 <ul class = "canvas-button-list">
                     <li> 
                         <div class="btn-group" role="group" aria-label="Basic example">
-                            <button type="button" class="btn btn-primary">Select <i class="fas fa-object-group"></i></button>
-                            <button type="button" class="btn btn-outline-primary">Draw <i class="fas fa-pencil-ruler"></i></button>
+                            <button type="button" class="btn btn-primary" id="select" >Select <i class="fas fa-object-group"></i></button>
+                            <button type="button" class="btn btn-outline-primary" id="draw" >Draw <i class="fas fa-pencil-ruler"></i></button>
                         </div>
                         <div class="btn-group" role="group" aria-label="Basic example">
-                            <button type="button" class="btn btn-primary">Copy <i class="fas fa-copy"></i></button>
-                            <button type="button" class="btn btn-outline-primary">Paste <i class="fas fa-paste"></i></button>
+                            <button type="button" class="btn btn-primary" id="copy" >Copy <i class="fas fa-copy"></i></button>
+                            <button type="button" class="btn btn-outline-primary" id="paste" >Paste <i class="fas fa-paste"></i></button>
                         </div>
                     </li>
                     <li>
@@ -53,7 +53,7 @@
                         <button class="btn btn-primary" id="addCircle" >+ <i class="far fa-circle"></i></button>
                     </li>
                     <li>
-                        <button class="btn btn-danger">Remove <i class="far fa-trash-alt"></i></button>
+                        <button class="btn btn-danger" id="removeObject" >Remove <i class="far fa-trash-alt"></i></button>
                     </li>                    
                     <li>
                         <div class="btn-group" role="group" aria-label="Basic example">
@@ -66,12 +66,18 @@
                 </ul>
                 <br>
                 <h5>Canvas dimensions</h5>
-                <input type="tel" class="form-control" placeholder="Height in pixels" id="height" >
-                <input type="tel" class="form-control" placeholder="Width in pixels" id="width">
+                <input type="tel" class="form-control" placeholder="Height in pixels" id="height" readonly>
+                <input type="tel" class="form-control" placeholder="Width in pixels" id="width" readonly >
                 <br>
-                <h5>Object dimensions</h5>
-                <input type="tel" class="form-control" placeholder="Height in pixels" id="heightObj" >
-                <input type="tel" class="form-control" placeholder="Width in pixels" id="widthObj">
+                <h5>Object dimensions (selected object) </h5>
+                <div class="form-group">
+                    <label>Height (in px)</label>
+                    <input type="tel" class="form-control" placeholder="Height in pixels" id="heightObj" readonly >
+                </div>
+                <div class="form-group">
+                    <label>Width (in px)</label>
+                    <input type="tel" class="form-control" placeholder="Width in pixels" id="widthObj" readonly >
+                </div>
             </div>
         </div>
         <div class="row">

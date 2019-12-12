@@ -22,7 +22,7 @@ let widthEl = document.getElementById('width')
 let heightEl = document.getElementById('height')
 let canvasEl = document.getElementById('workspace')
 
-// Load background image from URL
+// Initialize canvas
 function initCanvas() {
   if (canvas) {
     canvas.clear()
@@ -67,8 +67,13 @@ function initCanvas() {
   number = 1
   canvas.backgroundColor = backgroundColor
 
+  canvas.on('object:added', function (e) {
+    getObjDimensions(e);
+  })
+
   canvas.on('object:moving', function (e) {
-    snapToGrid(e.target)
+    snapToGrid(e.target);
+    getObjDimensions(e);
   })
 
   canvas.on('object:scaling', function (e) {
@@ -87,12 +92,15 @@ function initCanvas() {
         e.target.strokeWidth = e.target.strokeWidthUnscaled / e.target.scaleY
       }
     }
+
+    getObjDimensions(e);
   })
 
   canvas.on('object:modified', function (e) {
     e.target.scaleX = e.target.scaleX >= 0.25 ? (Math.round(e.target.scaleX * 2) / 2) : 0.5
     e.target.scaleY = e.target.scaleY >= 0.25 ? (Math.round(e.target.scaleY * 2) / 2) : 0.5
-    snapToGrid(e.target)
+    snapToGrid(e.target);
+    getObjDimensions(e);
   })
 
   canvas.observe('object:moving', function (e) {
@@ -114,7 +122,7 @@ function snapToGrid(target) {
   })
 }
 
-// Check bounding box
+// Check bounding box i.e. make sure that object remains inside canvas
 function checkBoundingBox(e) {
   const obj = e.target
 
@@ -222,14 +230,253 @@ function addCircle(left, top, radius) {
   return g
 }
 
-$("#addRectangle").click(function(){
+// Get dimensions of active object
+function getObjDimensions(obj) {
+  let target = obj.target;
+
+  heightObj = target.height * target.scaleY;
+  widthObj = target.width * target.scaleX;
+
+  $("#heightObj").val(heightObj);
+  $("#widthObj").val(widthObj);
+
+}
+
+function getSelection(){
+  return canvas.getActiveObject() == null ? canvas.getActiveGroup() : canvas.getActiveObject()
+}
+// Copy object
+function copy() {
+	// clone what are you copying since you
+	// may want copy and paste on different moment.
+	// and you do not want the changes happened
+	// later to reflect on the copy.
+	getSelection().clone(function(cloned) {
+		_clipboard = cloned;
+	});
+}
+// Paste object
+function paste() {
+	// clone again, so you can do multiple copies.
+	_clipboard.clone(function(clonedObj) {
+		canvas.discardActiveObject();
+		clonedObj.set({
+			left: clonedObj.left + 10,
+			top: clonedObj.top + 10,
+			evented: true,
+		});
+		if (clonedObj.type === 'activeSelection') {
+			// active selection needs a reference to the canvas.
+			clonedObj.canvas = canvas;
+			clonedObj.forEachObject(function(obj) {
+				canvas.add(obj);
+			});
+			// this should solve the unselectability
+			clonedObj.setCoords();
+		} else {
+			canvas.add(clonedObj);
+		}
+		_clipboard.top += 10;
+		_clipboard.left += 10;
+		canvas.setActiveObject(clonedObj);
+		canvas.requestRenderAll();
+	});
+}
+// Keyboard handlers
+function createListenersKeyboard() {
+  document.onkeydown = onKeyDownHandler;
+  //document.onkeyup = onKeyUpHandler;
+}
+
+$(window).keydown(function (e) {
+  switch (e.keyCode) {
+    case 46: // delete
+      var obj = canvas.getActiveObject();
+      canvas.remove(obj);
+      canvas.renderAll();
+      return false;
+  }
+  return; //using "return" other attached events will execute
+});
+
+function onKeyDownHandler(event) {
+  //event.preventDefault();
+  var key;
+  if (window.event) {
+    key = window.event.keyCode;
+  }
+  else {
+    key = event.keyCode;
+  }
+
+  switch (key) {
+    // Shortcuts
+    case 67: // Ctrl+C
+      if (event.ctrlKey) {
+        event.preventDefault();
+        copy();
+      }
+      break;
+    // Paste (Ctrl+V)
+    case 86: // Ctrl+V
+      if (event.ctrlKey) {
+        event.preventDefault();
+        paste();
+      }
+      break;
+
+    default:
+      // TODO
+      break;
+  }
+}
+
+// Add rectangle on click of button
+$("#addRectangle").click(function () {
   const o = addRect(0, 0, 60, 60)
   canvas.setActiveObject(o)
 });
 
-$("#addCircle").click(function(){
+// Add circle on click of button
+$("#addCircle").click(function () {
   const o = addCircle(0, 0, 30)
   canvas.setActiveObject(o)
 });
 
+// Remove active object
+$("#removeObject").click(function () {
+  const o = canvas.getActiveObject()
+  console.log(o);
+  if (o) {
+    o.remove();
+    canvas.remove(o);
+    canvas.discardActiveObject();
+    canvas.renderAll();
+
+    $("#heightObj").val("");
+    $("#widthObj").val("");
+  }
+});
+
+// Select objects
+$("#select").click(function () {
+  canvas.DrawingMode = false;
+});
+
+$("#draw").click(function () {
+  canvas.DrawingMode = true;
+});
+
+$("#copy").click(function() {
+  copy();
+});
+
+$("#paste").click(function() {
+  paste();
+})
+
 initCanvas();
+
+// When drawing mode is enabled
+var Rectangle = (function () {
+  function Rectangle(canvas) {
+    var inst = this;
+    this.canvas = canvas;
+    this.className = 'Rectangle';
+    this.isDrawing = false;
+    this.bindEvents();
+  }
+
+  Rectangle.prototype.bindEvents = function () {
+    var inst = this;
+    inst.canvas.on('mouse:down', function (o) {
+      inst.onMouseDown(o);
+    });
+    inst.canvas.on('mouse:move', function (o) {
+      inst.onMouseMove(o);
+    });
+    inst.canvas.on('mouse:up', function (o) {
+      inst.onMouseUp(o);
+    });
+    inst.canvas.on('object:moving', function (o) {
+      inst.disable();
+    })
+  }
+  Rectangle.prototype.onMouseUp = function (o) {
+    var inst = this;
+    inst.disable();
+  };
+
+  Rectangle.prototype.onMouseMove = function (o) {
+    var inst = this;
+
+    if (!inst.isEnable()) { return; }
+    var pointer = inst.canvas.getPointer(o.e);
+    var activeObj = inst.canvas.getActiveObject();
+
+    if (origX > pointer.x) {
+      activeObj.set({ left: Math.abs(pointer.x) });
+    }
+    if (origY > pointer.y) {
+      activeObj.set({ top: Math.abs(pointer.y) });
+    }
+
+    activeObj.set({ width: Math.abs(origX - pointer.x) });
+    activeObj.set({ height: Math.abs(origY - pointer.y) });
+
+    activeObj.setCoords();
+    inst.canvas.renderAll();
+
+  };
+
+  Rectangle.prototype.onMouseDown = function (o) {
+    if (canvas.DrawingMode == true) {
+      var inst = this;
+      inst.enable();
+
+      var pointer = inst.canvas.getPointer(o.e);
+      origX = pointer.x;
+      origY = pointer.y;
+
+      var rect = new fabric.Rect({
+        left: origX,
+        top: origY,
+        originX: 'left',
+        originY: 'top',
+        width: pointer.x - origX,
+        height: pointer.y - origY,
+        angle: 0,
+        transparentCorners: false,
+        hasBorders: true,
+        hasControls: true,
+        fill: 'rgba(255,0, 0, 0.4)',
+        stroke: tableStroke,
+        strokeWidth: 0,
+        shadow: tableShadow,
+        centeredRotation: true,
+        lockScalingX: false,
+        lockScalingY: false,
+        lockRotation: false,
+        snapAngle: 5
+      });
+      canvas.DrawingMode = false;
+      inst.canvas.add(rect).setActiveObject(rect);
+    }
+  };
+
+  Rectangle.prototype.isEnable = function () {
+    return this.isDrawing;
+  }
+
+  Rectangle.prototype.enable = function () {
+    this.isDrawing = true;
+  }
+
+  Rectangle.prototype.disable = function () {
+    this.isDrawing = false;
+  }
+
+  return Rectangle;
+}());
+
+var arrow = new Rectangle(canvas);
