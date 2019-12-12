@@ -22,6 +22,8 @@ let widthEl = document.getElementById('width')
 let heightEl = document.getElementById('height')
 let canvasEl = document.getElementById('workspace')
 
+var ctrlDown = false;
+var copiedObjects = new Array();
 // Initialize canvas
 function initCanvas() {
   if (canvas) {
@@ -242,52 +244,47 @@ function getObjDimensions(obj) {
 
 }
 
+// ************** HANDLE COPY PASTE HERE ************** //
+function copy() {
+  // clone what are you copying since you
+  // may want copy and paste on different moment.
+  // and you do not want the changes happened
+  // later to reflect on the copy.
+  getSelection().clone(function (cloned) {
+    _clipboard = cloned;
+  });
+}
+
+function paste() {
+  // clone again, so you can do multiple copies.
+  _clipboard.clone(function (clonedObj) {
+    canvas.discardActiveObject();
+    clonedObj.set({
+      left: clonedObj.left + 10,
+      top: clonedObj.top + 10,
+      evented: true,
+    });
+    if (clonedObj.type === 'activeSelection') {
+      // active selection needs a reference to the canvas.
+      clonedObj.canvas = canvas;
+      clonedObj.forEachObject(function (obj) {
+        canvas.add(obj);
+      });
+      // this should solve the unselectability
+      clonedObj.setCoords();
+    } else {
+      canvas.add(clonedObj);
+    }
+    _clipboard.top += 10;
+    _clipboard.left += 10;
+    canvas.setActiveObject(clonedObj);
+    canvas.requestRenderAll();
+  });
+}
 function getSelection(){
   return canvas.getActiveObject() == null ? canvas.getActiveGroup() : canvas.getActiveObject()
 }
-// Copy object
-function copy() {
-	// clone what are you copying since you
-	// may want copy and paste on different moment.
-	// and you do not want the changes happened
-	// later to reflect on the copy.
-	getSelection().clone(function(cloned) {
-		_clipboard = cloned;
-	});
-}
-// Paste object
-function paste() {
-	// clone again, so you can do multiple copies.
-	_clipboard.clone(function(clonedObj) {
-		canvas.discardActiveObject();
-		clonedObj.set({
-			left: clonedObj.left + 10,
-			top: clonedObj.top + 10,
-			evented: true,
-		});
-		if (clonedObj.type === 'activeSelection') {
-			// active selection needs a reference to the canvas.
-			clonedObj.canvas = canvas;
-			clonedObj.forEachObject(function(obj) {
-				canvas.add(obj);
-			});
-			// this should solve the unselectability
-			clonedObj.setCoords();
-		} else {
-			canvas.add(clonedObj);
-		}
-		_clipboard.top += 10;
-		_clipboard.left += 10;
-		canvas.setActiveObject(clonedObj);
-		canvas.requestRenderAll();
-	});
-}
-// Keyboard handlers
-function createListenersKeyboard() {
-  document.onkeydown = onKeyDownHandler;
-  //document.onkeyup = onKeyUpHandler;
-}
-
+// For delete handling via button 
 $(window).keydown(function (e) {
   switch (e.keyCode) {
     case 46: // delete
@@ -298,38 +295,6 @@ $(window).keydown(function (e) {
   }
   return; //using "return" other attached events will execute
 });
-
-function onKeyDownHandler(event) {
-  //event.preventDefault();
-  var key;
-  if (window.event) {
-    key = window.event.keyCode;
-  }
-  else {
-    key = event.keyCode;
-  }
-
-  switch (key) {
-    // Shortcuts
-    case 67: // Ctrl+C
-      if (event.ctrlKey) {
-        event.preventDefault();
-        copy();
-      }
-      break;
-    // Paste (Ctrl+V)
-    case 86: // Ctrl+V
-      if (event.ctrlKey) {
-        event.preventDefault();
-        paste();
-      }
-      break;
-
-    default:
-      // TODO
-      break;
-  }
-}
 
 // Add rectangle on click of button
 $("#addRectangle").click(function () {
@@ -345,8 +310,7 @@ $("#addCircle").click(function () {
 
 // Remove active object
 $("#removeObject").click(function () {
-  const o = canvas.getActiveObject()
-  console.log(o);
+  const o = getSelection()
   if (o) {
     o.remove();
     canvas.remove(o);
@@ -367,11 +331,11 @@ $("#draw").click(function () {
   canvas.DrawingMode = true;
 });
 
-$("#copy").click(function() {
+$("#copy").click(function () {
   copy();
 });
 
-$("#paste").click(function() {
+$("#paste").click(function () {
   paste();
 })
 
