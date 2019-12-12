@@ -42,7 +42,11 @@ function initCanvas() {
         var data = f.target.result;
         fabric.Image.fromURL(data, function (img) {
 
-          canvas.setWidth($(".canvas-area").width());
+          canvasHeight = $(".canvas-area").height();
+          canvasWidth = (img.width / img.height) * canvasHeight;
+
+          canvas.setHeight(canvasHeight);
+          canvas.setWidth(canvasWidth);
 
           document.getElementById("width").value = img.width;
           document.getElementById("height").value = img.height;
