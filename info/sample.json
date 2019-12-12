@@ -1,0 +1,36 @@
+{
+    "details": [
+        {
+            "frameSize": "9x16",
+            "fileName": "https://data.creatorpresets.com/api/20191025040653/darkroomselects_1_frame.png",
+            "width": "2160",
+            "height": "3840"
+        }
+    ],
+    "areas": [
+        {
+            "order": "1",
+            "width": "1543",
+            "height": "697",
+            "coords": "295,-5,1838,692",
+            "shape": "rect",
+            "rotate": "0"
+        },
+        {
+            "order": "2",
+            "width": "1546",
+            "height": "2316",
+            "coords": "299,773,1845,3089",
+            "shape": "rect",
+            "rotate": "0"
+        },
+        {
+            "order": "3",
+            "width": "1553",
+            "height": "730",
+            "coords": "297,3110,1850,3840",
+            "shape": "rect",
+            "rotate": "0"
+        }
+    ]
+}

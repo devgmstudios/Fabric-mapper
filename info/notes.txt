@@ -1,0 +1,6 @@
+ - JSON must be the exact same 
+ - formatted like: https://creatorframes.com/
+ - Ordering (1,2,3,4) which rectangle overlays which rectange (z-index) for example.
+ - Display while resizing rectangle height + width 
+     - When you're adding a rectangle, as you're adding it - 
+       display the width and the height that the rectangle is realtime Width + height.

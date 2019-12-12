@@ -1,0 +1,46 @@
+.title-row{
+    margin-top: 20px;
+    background-color: #2d3e50;
+    padding: 10px;
+}
+
+.title{
+    text-align: center;
+    color: white;
+}
+
+.initControlPanel{
+    background-color: #1f8dd6;
+    padding: 20px;
+}
+
+.canvas-area{
+    height: 500px;
+}
+
+.canvas-control-panel{
+    height: 500px;
+    background-color: #f5f2d0;
+}
+
+.canvas-button-list{
+    margin-top: 30px;
+    list-style: none;
+}
+.canvas-button-list li{
+    padding: 5px;
+}
+.canvas-button-list li button{
+    padding: 5px;
+}
+.footer {
+    background: #111;
+}
+
+.is-center {
+    text-align: center;
+}
+
+.l-box {
+    padding: 1em;
+}
