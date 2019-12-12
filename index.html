@@ -34,7 +34,7 @@
 
         <div class="row">
             <div class="col-md-8 canvas-area">
-                <canvas height="500px" width="730" id="workspace" ></canvas>
+                <canvas height="600px" width="730" id="workspace" ></canvas>
             </div>
             <div class="col-md-4 canvas-control-panel">
                 <ul class = "canvas-button-list">
@@ -49,7 +49,7 @@
                         </div>
                     </li>
                     <li>
-                        <button class="btn btn-primary">+ <i class="far fa-square"></i></button>
+                        <button class="btn btn-primary" id="addRectangle" >+ <i class="far fa-square"></i></button>
                         <button class="btn btn-primary" id="addCircle" >+ <i class="far fa-circle"></i></button>
                     </li>
                     <li>
@@ -64,8 +64,14 @@
                         </div>
                     </li>
                 </ul>
+                <br>
+                <h5>Canvas dimensions</h5>
                 <input type="tel" class="form-control" placeholder="Height in pixels" id="height" >
                 <input type="tel" class="form-control" placeholder="Width in pixels" id="width">
+                <br>
+                <h5>Object dimensions</h5>
+                <input type="tel" class="form-control" placeholder="Height in pixels" id="heightObj" >
+                <input type="tel" class="form-control" placeholder="Width in pixels" id="widthObj">
             </div>
         </div>
         <div class="row">

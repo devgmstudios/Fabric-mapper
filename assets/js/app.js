@@ -63,43 +63,42 @@ function initCanvas() {
   number = 1
   canvas.backgroundColor = backgroundColor
 
-  // Load x-axis
-  for (let i = 0; i < (canvas.height / grid); i++) {
-    const lineX = new fabric.Line([0, i * grid, canvas.height, i * grid], {
-      stroke: lineStroke,
-      selectable: false,
-      type: 'line'
-    })
-    sendLinesToBack()
-    canvas.add(lineX)
-  }
+  canvas.on('object:moving', function (e) {
+    snapToGrid(e.target)
+  })
 
-  // Load y-axis
-  for (let i = 0; i < (canvas.width / grid); i++) {
-    const lineY = new fabric.Line([i * grid, 0, i * grid, canvas.height], {
-      stroke: lineStroke,
-      selectable: false,
-      type: 'line'
-    })
-    sendLinesToBack()
-    canvas.add(lineY)
-  }
+  canvas.on('object:scaling', function (e) {
+    if (e.target.scaleX > 5) {
+      e.target.scaleX = 5
+    }
+    if (e.target.scaleY > 5) {
+      e.target.scaleY = 5
+    }
+    if (!e.target.strokeWidthUnscaled && e.target.strokeWidth) {
+      e.target.strokeWidthUnscaled = e.target.strokeWidth
+    }
+    if (e.target.strokeWidthUnscaled) {
+      e.target.strokeWidth = e.target.strokeWidthUnscaled / e.target.scaleX
+      if (e.target.strokeWidth === e.target.strokeWidthUnscaled) {
+        e.target.strokeWidth = e.target.strokeWidthUnscaled / e.target.scaleY
+      }
+    }
+  })
 
-  
-  canvas.on('object:moving', function (options) {
-    options.target.set({
-      left: Math.round(options.target.left / grid) * grid,
-      top: Math.round(options.target.top / grid) * grid
-    });
-  });
+  canvas.on('object:modified', function (e) {
+    e.target.scaleX = e.target.scaleX >= 0.25 ? (Math.round(e.target.scaleX * 2) / 2) : 0.5
+    e.target.scaleY = e.target.scaleY >= 0.25 ? (Math.round(e.target.scaleY * 2) / 2) : 0.5
+    snapToGrid(e.target)
+  })
+
   canvas.observe('object:moving', function (e) {
-    checkBoudningBox(e)
+    checkBoundingBox(e)
   })
   canvas.observe('object:rotating', function (e) {
-    checkBoudningBox(e)
+    checkBoundingBox(e)
   })
   canvas.observe('object:scaling', function (e) {
-    checkBoudningBox(e)
+    checkBoundingBox(e)
   })
 }
 
@@ -139,41 +138,94 @@ function checkBoundingBox(e) {
   }
 }
 
-// Send to back
-function sendLinesToBack() {
-  canvas.getObjects().map(o => {
-    if (o.type === 'line') {
-      canvas.sendToBack(o)
-    }
-  })
+// Generate ID for created objects
+function generateId() {
+  return Math.random().toString(36).substr(2, 8)
 }
 
-// Set active rectangle
-// document.querySelectorAll('.rectangle')[0].addEventListener('click', function () {
-//   const o = addRect(0, 0, 60, 60)
-//   canvas.setActiveObject(o)
-// })
+// Add rectangle to canvas
+function addRect(left, top, width, height) {
+  const id = generateId()
+  const o = new fabric.Rect({
+    width: width,
+    height: height,
+    fill: tableFill,
+    stroke: tableStroke,
+    strokeWidth: 2,
+    shadow: tableShadow,
+    originX: 'center',
+    originY: 'center',
+    centeredRotation: true,
+    snapAngle: 45,
+    selectable: true
+  })
+  const t = new fabric.IText(number.toString(), {
+    fontFamily: 'Calibri',
+    fontSize: 14,
+    fill: '#fff',
+    textAlign: 'center',
+    originX: 'center',
+    originY: 'center'
+  })
+  const g = new fabric.Group([o, t], {
+    left: left,
+    top: top,
+    centeredRotation: true,
+    snapAngle: 45,
+    selectable: true,
+    type: 'table',
+    id: id,
+    number: number
+  })
+  canvas.add(g)
+  number++
+  return g
+}
 
-// Remove active object
-// document.querySelectorAll('.remove')[0].addEventListener('click', function () {
-//   const o = canvas.getActiveObject()
-//   if (o) {
-//     o.remove()
-//     canvas.remove(o)
-//     canvas.discardActiveObject()
-//     canvas.renderAll()
-//   }
-// })
+// Add circle to canvas
+function addCircle(left, top, radius) {
+  const id = generateId()
+  const o = new fabric.Circle({
+    radius: radius,
+    fill: tableFill,
+    stroke: tableStroke,
+    strokeWidth: 2,
+    shadow: tableShadow,
+    originX: 'center',
+    originY: 'center',
+    centeredRotation: true
+  })
+  const t = new fabric.IText(number.toString(), {
+    fontFamily: 'Calibri',
+    fontSize: 14,
+    fill: '#fff',
+    textAlign: 'center',
+    originX: 'center',
+    originY: 'center'
+  })
+  const g = new fabric.Group([o, t], {
+    left: left,
+    top: top,
+    centeredRotation: true,
+    snapAngle: 45,
+    selectable: true,
+    type: 'table',
+    id: id,
+    number: number
+  })
+  canvas.add(g)
+  number++
+  return g
+}
 
-// Add circle
-// $("#addCircle").click(function () {
-//   canvas.add(new fabric.Circle({
-//     radius: 50,
-//     left: 0,
-//     top: 0,
-//     fill: '#0B61A4'
-//   }));
-// });
+$("#addRectangle").click(function(){
+  const o = addRect(0, 0, 60, 60)
+  canvas.setActiveObject(o)
+});
 
+$("#addCircle").click(function(){
+  const o = addCircle(0, 0, 30)
+  canvas.setActiveObject(o)
+});
 
 initCanvas();
