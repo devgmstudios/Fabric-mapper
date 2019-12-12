@@ -281,9 +281,10 @@ function paste() {
     canvas.requestRenderAll();
   });
 }
-function getSelection(){
+function getSelection() {
   return canvas.getActiveObject() == null ? canvas.getActiveGroup() : canvas.getActiveObject()
-}
+};
+
 // For delete handling via button 
 $(window).keydown(function (e) {
   switch (e.keyCode) {
@@ -311,7 +312,7 @@ $("#addCircle").click(function () {
 // Remove active object
 $("#removeObject").click(function () {
   const o = getSelection()
-  if (o) {
+  if (o.remove) {
     o.remove();
     canvas.remove(o);
     canvas.discardActiveObject();
@@ -319,6 +320,10 @@ $("#removeObject").click(function () {
 
     $("#heightObj").val("");
     $("#widthObj").val("");
+  }
+  else {
+    console.log(o.id);
+    removeObjectFromCanvas(o.id);
   }
 });
 
@@ -403,6 +408,7 @@ var Rectangle = (function () {
       origY = pointer.y;
 
       var rect = new fabric.Rect({
+        id: generateId(),
         left: origX,
         top: origY,
         originX: 'left',
