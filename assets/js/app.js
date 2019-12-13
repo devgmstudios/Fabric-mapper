@@ -4,17 +4,17 @@ let number
 const grid = 8
 const backgroundColor = '#f8f8f8'
 const lineStroke = '#ebebeb'
-const tableFill = 'rgba(255,0, 0, 0.4)'
-const tableStroke = 'rgba(255,0, 0, 0.5)'
+const tableFill = 'rgba(255,0, 0, 1)'
+const tableStroke = 'rgba(255,0, 0, 1)'
 const tableShadow = 'rgba(0, 0, 0, 0.4) 3px 3px 7px'
 const chairFill = 'rgba(67, 42, 4, 0.7)'
 const chairStroke = '#32230b'
 const chairShadow = 'rgba(0, 0, 0, 0.4) 3px 3px 7px'
-const barFill = 'rgba(0, 93, 127, 0.7)'
+const barFill = 'rgba(0, 93, 127, 1)'
 const barStroke = '#003e54'
 const barShadow = 'rgba(0, 0, 0, 0.4) 3px 3px 7px'
 const barText = 'Bar'
-const wallFill = 'rgba(136, 136, 136, 0.7)'
+const wallFill = 'rgba(136, 136, 136, 1)'
 const wallStroke = '#686868'
 const wallShadow = 'rgba(0, 0, 0, 0.4) 5px 5px 20px'
 
@@ -281,6 +281,7 @@ function paste() {
     canvas.requestRenderAll();
   });
 }
+
 function getSelection() {
   return canvas.getActiveObject() == null ? canvas.getActiveGroup() : canvas.getActiveObject()
 };
@@ -342,7 +343,27 @@ $("#copy").click(function () {
 
 $("#paste").click(function () {
   paste();
-})
+});
+
+$("#bringToFront").click(function (){
+  const o = getSelection();
+  canvas.bringToFront(o);
+});
+
+$("#bringForward").click(function (){
+  const o = getSelection();
+  canvas.bringForward(o);
+});
+
+$("#sendBackwards").click(function (){
+  const o = getSelection();
+  canvas.sendBackwards(o);
+});
+
+$("#sendToBack").click(function (){
+  const o = getSelection();
+  canvas.sendToBack(o);
+});
 
 initCanvas();
 
