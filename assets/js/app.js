@@ -283,7 +283,8 @@ function paste() {
 }
 
 function getSelection() {
-  return canvas.getActiveObject() == null ? canvas.getActiveGroup() : canvas.getActiveObject()
+  aOG = canvas.getActiveObject() == null ? canvas.getActiveGroup() : canvas.getActiveObject();
+  return aOG;
 };
 
 // For delete handling via button 
@@ -366,108 +367,3 @@ $("#sendToBack").click(function (){
 });
 
 initCanvas();
-
-// When drawing mode is enabled
-var Rectangle = (function () {
-  function Rectangle(canvas) {
-    var inst = this;
-    this.canvas = canvas;
-    this.className = 'Rectangle';
-    this.isDrawing = false;
-    this.bindEvents();
-  }
-
-  Rectangle.prototype.bindEvents = function () {
-    var inst = this;
-    inst.canvas.on('mouse:down', function (o) {
-      inst.onMouseDown(o);
-    });
-    inst.canvas.on('mouse:move', function (o) {
-      inst.onMouseMove(o);
-    });
-    inst.canvas.on('mouse:up', function (o) {
-      inst.onMouseUp(o);
-    });
-    inst.canvas.on('object:moving', function (o) {
-      inst.disable();
-    })
-  }
-  Rectangle.prototype.onMouseUp = function (o) {
-    var inst = this;
-    inst.disable();
-  };
-
-  Rectangle.prototype.onMouseMove = function (o) {
-    var inst = this;
-
-    if (!inst.isEnable()) { return; }
-    var pointer = inst.canvas.getPointer(o.e);
-    var activeObj = inst.canvas.getActiveObject();
-
-    if (origX > pointer.x) {
-      activeObj.set({ left: Math.abs(pointer.x) });
-    }
-    if (origY > pointer.y) {
-      activeObj.set({ top: Math.abs(pointer.y) });
-    }
-
-    activeObj.set({ width: Math.abs(origX - pointer.x) });
-    activeObj.set({ height: Math.abs(origY - pointer.y) });
-
-    activeObj.setCoords();
-    inst.canvas.renderAll();
-
-  };
-
-  Rectangle.prototype.onMouseDown = function (o) {
-    if (canvas.DrawingMode == true) {
-      var inst = this;
-      inst.enable();
-
-      var pointer = inst.canvas.getPointer(o.e);
-      origX = pointer.x;
-      origY = pointer.y;
-
-      var rect = new fabric.Rect({
-        id: generateId(),
-        left: origX,
-        top: origY,
-        originX: 'left',
-        originY: 'top',
-        width: pointer.x - origX,
-        height: pointer.y - origY,
-        angle: 0,
-        transparentCorners: false,
-        hasBorders: true,
-        hasControls: true,
-        fill: 'rgba(255,0, 0, 0.4)',
-        stroke: tableStroke,
-        strokeWidth: 0,
-        shadow: tableShadow,
-        centeredRotation: true,
-        lockScalingX: false,
-        lockScalingY: false,
-        lockRotation: false,
-        snapAngle: 5
-      });
-      canvas.DrawingMode = false;
-      inst.canvas.add(rect).setActiveObject(rect);
-    }
-  };
-
-  Rectangle.prototype.isEnable = function () {
-    return this.isDrawing;
-  }
-
-  Rectangle.prototype.enable = function () {
-    this.isDrawing = true;
-  }
-
-  Rectangle.prototype.disable = function () {
-    this.isDrawing = false;
-  }
-
-  return Rectangle;
-}());
-
-var arrow = new Rectangle(canvas);
