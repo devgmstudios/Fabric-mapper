@@ -297,6 +297,7 @@ function orderChanged() {
     canvas.getObjects().forEach(function(o){
       if(o.id == item){
         o.moveTo(i);
+        o.set('text', i);
       }
     });
   });
