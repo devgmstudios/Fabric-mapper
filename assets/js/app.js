@@ -170,7 +170,11 @@ function addRect(left, top, width, height) {
     snapAngle: 45,
     selectable: true
   });
-  const t = new fabric.IText(number.toString(), {
+  target = o;
+  const zindex = canvas.getObjects().indexOf(target);
+  const zindexG = zindex + 1;
+
+  const t = new fabric.IText(zindexG.toString(), {
     fontFamily: 'Calibri',
     fontSize: 14,
     fill: '#fff',
@@ -178,21 +182,23 @@ function addRect(left, top, width, height) {
     originX: 'center',
     originY: 'center'
   });
-  target = o.target;
-  var zindex = canvas.getObjects().indexOf(target);
-  zindex = (zindex) + 1;
-
+  // zindexG = (zindex) + 1;
+  console.log(zindex);
   const g = new fabric.Group([o, t], {
     left: left,
     top: top,
     centeredRotation: true,
-    snapAngle: 45,
+    snapAngle: 5,
     selectable: true,
+    lockScalingX: false,
+    lockScalingY: false,
+    lockRotation: false,
     type: 'table',
-    id: id,
-    number: zindex
+    id: id
   });
+
   canvas.add(g);
+  canvas.renderAll();
   return g;
 }
 
@@ -374,6 +380,8 @@ function addToSortableList(obj) {
   var zindex = canvas.getObjects().indexOf(target);
 
   zindex = (zindex) + 1;
+
+  target.item(1).set({'text': zindex.toString()});
 
   $("#sortable").append('<li class="ui-state-default list-group-item" data-id="' + target.id + '" >' + zindex + '</li>');
   $("#defaultItem").remove();
