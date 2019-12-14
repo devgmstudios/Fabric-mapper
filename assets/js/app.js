@@ -216,8 +216,13 @@ function addRect(left, top, width, height) {
 function getObjDimensions(obj) {
   let target = obj.target;
 
-  heightObj = target.height * target.scaleY;
-  widthObj = target.width * target.scaleX;
+  const width = bgImg ? bgImg.width : 1;
+  const height = bgImg ? bgImg.height : 1;
+
+  let ratio = gcd(width, height);  
+
+  heightObj = target.height * target.scaleY * (height / ratio);
+  widthObj = target.width * target.scaleX * (width / ratio);
 
   $("#heightObj").val(heightObj);
   $("#widthObj").val(widthObj);
@@ -330,6 +335,9 @@ function rectmousemove(e) {
 
   rect.set({ width: Math.abs(origX - pointer.x) });
   rect.set({ height: Math.abs(origY - pointer.y) });
+
+  snapToGrid(e.target);
+
   canvas.renderAll();
 }
 
@@ -407,11 +415,16 @@ function fabricToJSON() {
   }
 
   canvas.getObjects().forEach(function (o) {
+
+    let target = o;
+    heightObj = target.height * target.scaleY * frameHeight;
+    widthObj = target.width * target.scaleX * frameWidth;
+  
     baseJSON.areas.push({
       order: canvas.getObjects().indexOf(o) + 1,
-      width: o.width,
-      height: o.height,
-      coords: o.left + ", " + o.top + ", " + (o.left + o.width) + ", " + (o.top + o.height),
+      width: widthObj,
+      height: heightObj,
+      coords: (o.left * frameWidth) + ", " + (o.top * frameHeight) + ", " + ((o.left + o.width) * frameWidth) + ", " + ((o.top + o.height) * frameHeight) ,
       shape: o.type,
       rotate: o.get('angle')
     });
