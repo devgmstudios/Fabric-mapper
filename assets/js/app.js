@@ -293,12 +293,9 @@ function addToSortableList(obj) {
 function orderChanged() {
   var listInOrder = $("#sortable").sortable("toArray", {attribute: 'data-id'} );
 
-  console.log(listInOrder);
-
   listInOrder.forEach(function(item, i){
     canvas.getObjects().forEach(function(o){
       if(o.id == item){
-        console.log(item);
         o.moveTo(i);
       }
     });
