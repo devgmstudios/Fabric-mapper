@@ -44,8 +44,8 @@ function initCanvas() {
         var data = f.target.result;
         fabric.Image.fromURL(data, function (img) {
 
-          canvasHeight = $(".canvas-area").height();
-          canvasWidth = (img.width / img.height) * canvasHeight;
+          canvasWidth = $(".canvas-area").width();
+          canvasHeight = (img.height / img.width) * canvasWidth;
 
           canvas.setHeight(canvasHeight);
           canvas.setWidth(canvasWidth);
@@ -103,6 +103,7 @@ function initCanvas() {
     e.target.scaleY = e.target.scaleY >= 0.25 ? (Math.round(e.target.scaleY * 2) / 2) : 0.5
     snapToGrid(e.target);
     getObjDimensions(e);
+    addToSortableList(e);
   })
 
   canvas.observe('object:moving', function (e) {
@@ -281,6 +282,17 @@ function paste() {
     canvas.requestRenderAll();
   });
 }
+// ************** HANDLE COPY PASTE HERE ************** //
+
+// ************** HANDLE OBJECT ORDERING HERE ************** //
+
+function addToSortableList(obj) {
+  target = obj.target;
+  const zindex = canvas.getObjects().indexOf(target);
+  console.log(zindex);
+}
+
+// ************** HANDLE OBJECT ORDERING HERE ************** //
 
 function getSelection() {
   aOG = canvas.getActiveObject() == null ? canvas.getActiveGroup() : canvas.getActiveObject();
@@ -364,6 +376,11 @@ $("#sendBackwards").click(function (){
 $("#sendToBack").click(function (){
   const o = getSelection();
   canvas.sendToBack(o);
+});
+
+// Handle item sorting
+$( function() {
+  $( "#sortable" ).sortable();
 });
 
 initCanvas();
