@@ -308,7 +308,7 @@ function rectmousedown(e) {
     lockRotation: false,
     id: id,
     number: zindex,
-    type: rect
+    type: 'rect'
   });
 
   canvas.add(rect);
@@ -368,6 +368,7 @@ function orderChanged() {
   });
 
   canvas.renderAll();
+  fabricToJSON();
 }
 
 // ************** HANDLE OBJECT ORDERING END ************** //
