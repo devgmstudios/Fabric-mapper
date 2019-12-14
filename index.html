@@ -55,8 +55,7 @@
                         </div>
                     </li>
                     <li>
-                        <button class="btn btn-primary" id="addRectangle" >+ <i class="far fa-square"></i></button>
-                        <button class="btn btn-primary" id="addCircle" >+ <i class="far fa-circle"></i></button>
+                        <button class="btn btn-primary" id="addRectangle" >+ Rectangle <i class="far fa-square"></i></button>
                     </li>
                     <li>
                         <button class="btn btn-danger" id="removeObject" >Remove <i class="far fa-trash-alt"></i></button>
@@ -86,10 +85,16 @@
                 </div>
                 <br>
                 <h5>Object ordering (lowest > highest) </h5>
-                <ul id="sortable" class="list-group" >
+                <ul id="sortable" class="list-group" style="margin-bottom: 10px;" >
                     <li class="ui-state-default list-group-item" id="defaultItem" >Default</li>
                 </ul>
-                <button class="btn btn-primary" id="changeOrder" >Change order</button>           
+                <button class="btn btn-primary" id="changeOrder" style="margin-bottom: 10px;" >Change order</button>
+                <hr>
+                <h5>Export options</h5>
+                <div class="form-group">
+                    <label for="">JSON output</label>
+                    <textarea class="form-control" id="jsonOutput" rows="10" readonly placeholder="JSON output" ></textarea>
+                </div>
             </div>
         </div>
         <div class="row">

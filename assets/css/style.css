@@ -22,6 +22,7 @@
     height: 100%;
     background-color: #f5f2d0;
     padding: 20px;
+    padding-bottom: 40px;
 }
 
 .canvas-button-list{
@@ -37,6 +38,7 @@
 }
 .footer {
     background: #111;
+    width: 100%;
 }
 
 .is-center {
@@ -45,4 +47,5 @@
 
 .l-box {
     padding: 1em;
+    color: white;
 }

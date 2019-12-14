@@ -1,4 +1,6 @@
 let canvas
+let file
+let bgImg
 
 const grid = 8
 const backgroundColor = '#f8f8f8'
@@ -21,18 +23,18 @@ function initCanvas() {
   }
 
   $(function () {
-
     canvas.renderAll();
     //Change background using Image
     document.getElementById('addBackground').addEventListener('change', function (e) {
       canvas.setBackgroundColor('', canvas.renderAll.bind(canvas));
       canvas.setBackgroundImage(0, canvas.renderAll.bind(canvas));
-      var file = e.target.files[0];
+      file = e.target.files[0];
       var reader = new FileReader();
       reader.onload = function (f) {
         var data = f.target.result;
         fabric.Image.fromURL(data, function (img) {
 
+          bgImg = img;
           canvasWidth = $(".canvas-area").width();
           canvasHeight = (img.height / img.width) * canvasWidth;
 
@@ -51,6 +53,7 @@ function initCanvas() {
       };
       reader.readAsDataURL(file);
       canvas.setBackgroundImage(0, canvas.renderAll.bind(canvas));
+      fabricToJSON();
     });
   });
 
@@ -61,11 +64,12 @@ function initCanvas() {
   canvas.on('object:added', function (e) {
     getObjDimensions(e);
     addToSortableList(e);
-
+    fabricToJSON();
   })
   canvas.on('object:moving', function (e) {
     snapToGrid(e.target);
     getObjDimensions(e);
+    fabricToJSON();
   })
   canvas.on('object:scaling', function (e) {
     if (e.target.scaleX > 5) {
@@ -85,12 +89,15 @@ function initCanvas() {
     }
 
     getObjDimensions(e);
+    fabricToJSON();
   })
   canvas.on('object:modified', function (e) {
     e.target.scaleX = e.target.scaleX >= 0.25 ? (Math.round(e.target.scaleX * 2) / 2) : 0.5
     e.target.scaleY = e.target.scaleY >= 0.25 ? (Math.round(e.target.scaleY * 2) / 2) : 0.5
     snapToGrid(e.target);
     getObjDimensions(e);
+    fabricToJSON();
+
   })
   canvas.observe('object:moving', function (e) {
     checkBoundingBox(e)
@@ -101,19 +108,18 @@ function initCanvas() {
   canvas.observe('object:scaling', function (e) {
     checkBoundingBox(e)
   })
-
   canvas.observe('mouse:down', function (e) {
-    if(canvas.DrawingMode) {
+    if (canvas.DrawingMode) {
       rectmousedown(e);
     }
   });
   canvas.observe('mouse:move', function (e) {
-    if(canvas.DrawingMode) {
+    if (canvas.DrawingMode) {
       rectmousemove(e);
     }
   });
   canvas.observe('mouse:up', function (e) {
-    if(canvas.DrawingMode) {
+    if (canvas.DrawingMode) {
       rectmouseup(e);
     }
   });
@@ -173,7 +179,7 @@ function addRect(left, top, width, height) {
     originX: 'center',
     originY: 'center',
     centeredRotation: true,
-    snapAngle: 45,
+    snapAngle: 1,
     selectable: true
   });
   target = o;
@@ -188,60 +194,22 @@ function addRect(left, top, width, height) {
     originX: 'center',
     originY: 'center'
   });
-  // zindexG = (zindex) + 1;
-  console.log(zindex);
   const g = new fabric.Group([o, t], {
     left: left,
     top: top,
     centeredRotation: true,
-    snapAngle: 5,
+    snapAngle: 1,
     selectable: true,
     lockScalingX: false,
     lockScalingY: false,
     lockRotation: false,
-    type: 'table',
+    type: 'rect',
     id: id
   });
 
   canvas.add(g);
   canvas.renderAll();
   return g;
-}
-
-// Add circle to canvas
-function addCircle(left, top, radius) {
-  const id = generateId()
-  const o = new fabric.Circle({
-    radius: radius,
-    fill: tableFill,
-    stroke: tableStroke,
-    strokeWidth: 2,
-    shadow: tableShadow,
-    originX: 'center',
-    originY: 'center',
-    centeredRotation: true
-  })
-  const t = new fabric.IText(number.toString(), {
-    fontFamily: 'Calibri',
-    fontSize: 14,
-    fill: '#fff',
-    textAlign: 'center',
-    originX: 'center',
-    originY: 'center'
-  })
-  const g = new fabric.Group([o, t], {
-    left: left,
-    top: top,
-    centeredRotation: true,
-    snapAngle: 45,
-    selectable: true,
-    type: 'table',
-    id: id,
-    number: number
-  })
-  canvas.add(g)
-  number++
-  return g
 }
 
 // Get dimensions of active object
@@ -315,7 +283,7 @@ function rectmousedown(e) {
     originX: 'center',
     originY: 'center',
     centeredRotation: true,
-    snapAngle: 45,
+    snapAngle: 1,
     selectable: true
   });
   const t = new fabric.IText(number.toString(), {
@@ -333,13 +301,14 @@ function rectmousedown(e) {
     left: origX,
     top: origY,
     centeredRotation: true,
-    snapAngle: 5,
+    snapAngle: 1,
     selectable: true,
     lockScalingX: false,
     lockScalingY: false,
     lockRotation: false,
     id: id,
-    number: zindex
+    number: zindex,
+    type: rect
   });
 
   canvas.add(rect);
@@ -380,7 +349,7 @@ function addToSortableList(obj) {
 
   zindex = (zindex) + 1;
 
-  target.item(1).set({'text': zindex.toString()});
+  target.item(1).set({ 'text': zindex.toString() });
 
   $("#sortable").append('<li class="ui-state-default list-group-item" data-id="' + target.id + '" >' + zindex + '</li>');
   $("#defaultItem").remove();
@@ -392,8 +361,8 @@ function orderChanged() {
   listInOrder.forEach(function (item, i) {
     canvas.getObjects().forEach(function (o) {
       if (o.id == item) {
-        o.moveTo(i);
-        o.set('text', i);
+        o.moveTo(i + 1);
+        o.set('text', i + 1);
       }
     });
   });
@@ -402,6 +371,54 @@ function orderChanged() {
 }
 
 // ************** HANDLE OBJECT ORDERING END ************** //
+
+// ************** HANDLE EXPORT HERE ************** //
+
+// Find greatest common divider
+function gcd (a, b) {
+  return (b == 0) ? a : gcd (b, a%b);
+}
+
+function fabricToJSON() {
+
+  const width = bgImg ? bgImg.width : 1;
+  const height = bgImg ? bgImg.height : 1;
+
+  let ratio = gcd(width, height);
+
+  frameHeight = height / ratio;
+  frameWidth = width / ratio;
+
+  if(file) {
+    fileName = file.name;
+  }else {
+    fileName = '';
+  }
+
+  let baseJSON = {
+    details: [{
+      frameSize: frameWidth + "x" + frameHeight,
+      fileName: "https://data.creatorpresets.com/api/" + fileName,
+      width: width,
+      height: height
+    }],
+    areas: []
+  }
+
+  canvas.getObjects().forEach(function (o) {
+    baseJSON.areas.push({
+      order: canvas.getObjects().indexOf(o) + 1,
+      width: o.width,
+      height: o.height,
+      coords: o.left + ", " + o.top + ", " + (o.left + o.width) + ", " + (o.top + o.height),
+      shape: o.type,
+      rotate: o.get('angle')
+    });
+  });
+
+  $("#jsonOutput").val(JSON.stringify(baseJSON, null, 2));
+}
+// ************** HANDLE EXPORT END ************** //
 
 function getSelection() {
   aOG = canvas.getActiveObject() == null ? canvas.getActiveGroup() : canvas.getActiveObject();
@@ -426,12 +443,6 @@ $("#addRectangle").click(function () {
   canvas.setActiveObject(o)
 });
 
-// Add circle on click of button
-$("#addCircle").click(function () {
-  const o = addCircle(0, 0, 30)
-  canvas.setActiveObject(o)
-});
-
 // Remove active object
 $("#removeObject").click(function () {
   const o = getSelection()
@@ -445,12 +456,10 @@ $("#removeObject").click(function () {
     $("#widthObj").val("");
   }
   else {
-    console.log(o.id);
     removeObjectFromCanvas(o.id);
   }
 });
 
-// Select objects
 $("#select").click(function () {
   canvas.DrawingMode = false;
 });
@@ -497,3 +506,4 @@ $(function () {
 });
 
 initCanvas();
+fabricToJSON();
