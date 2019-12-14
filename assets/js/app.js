@@ -1,5 +1,4 @@
 let canvas
-let number
 
 const grid = 8
 const backgroundColor = '#f8f8f8'
@@ -7,16 +6,6 @@ const lineStroke = '#ebebeb'
 const tableFill = 'rgba(255,0, 0, 1)'
 const tableStroke = 'rgba(255,0, 0, 1)'
 const tableShadow = 'rgba(0, 0, 0, 0.4) 3px 3px 7px'
-const chairFill = 'rgba(67, 42, 4, 0.7)'
-const chairStroke = '#32230b'
-const chairShadow = 'rgba(0, 0, 0, 0.4) 3px 3px 7px'
-const barFill = 'rgba(0, 93, 127, 1)'
-const barStroke = '#003e54'
-const barShadow = 'rgba(0, 0, 0, 0.4) 3px 3px 7px'
-const barText = 'Bar'
-const wallFill = 'rgba(136, 136, 136, 1)'
-const wallStroke = '#686868'
-const wallShadow = 'rgba(0, 0, 0, 0.4) 5px 5px 20px'
 
 let widthEl = document.getElementById('width')
 let heightEl = document.getElementById('height')
@@ -71,6 +60,8 @@ function initCanvas() {
 
   canvas.on('object:added', function (e) {
     getObjDimensions(e);
+    addToSortableList(e);
+
   })
 
   canvas.on('object:moving', function (e) {
@@ -103,7 +94,6 @@ function initCanvas() {
     e.target.scaleY = e.target.scaleY >= 0.25 ? (Math.round(e.target.scaleY * 2) / 2) : 0.5
     snapToGrid(e.target);
     getObjDimensions(e);
-    addToSortableList(e);
   })
 
   canvas.observe('object:moving', function (e) {
@@ -182,6 +172,10 @@ function addRect(left, top, width, height) {
     originX: 'center',
     originY: 'center'
   })
+  target = o.target;
+  var zindex = canvas.getObjects().indexOf(target);
+  zindex = (zindex) + 1;
+
   const g = new fabric.Group([o, t], {
     left: left,
     top: top,
@@ -190,7 +184,7 @@ function addRect(left, top, width, height) {
     selectable: true,
     type: 'table',
     id: id,
-    number: number
+    number: zindex
   })
   canvas.add(g)
   number++
@@ -288,8 +282,29 @@ function paste() {
 
 function addToSortableList(obj) {
   target = obj.target;
-  const zindex = canvas.getObjects().indexOf(target);
-  console.log(zindex);
+  var zindex = canvas.getObjects().indexOf(target);
+
+  zindex = (zindex) + 1;
+
+  $("#sortable").append('<li class="ui-state-default list-group-item" data-id="' + target.id +'" >' + zindex + '</li>');
+  $("#defaultItem").remove();
+}
+
+function orderChanged() {
+  var listInOrder = $("#sortable").sortable("toArray", {attribute: 'data-id'} );
+
+  console.log(listInOrder);
+
+  listInOrder.forEach(function(item, i){
+    canvas.getObjects().forEach(function(o){
+      if(o.id == item){
+        console.log(item);
+        o.moveTo(i);
+      }
+    });
+  });
+
+  canvas.renderAll();
 }
 
 // ************** HANDLE OBJECT ORDERING HERE ************** //
@@ -376,6 +391,10 @@ $("#sendBackwards").click(function (){
 $("#sendToBack").click(function (){
   const o = getSelection();
   canvas.sendToBack(o);
+});
+
+$("#changeOrder").click(function (){
+  orderChanged();
 });
 
 // Handle item sorting
