@@ -63,12 +63,10 @@ function initCanvas() {
     addToSortableList(e);
 
   })
-
   canvas.on('object:moving', function (e) {
     snapToGrid(e.target);
     getObjDimensions(e);
   })
-
   canvas.on('object:scaling', function (e) {
     if (e.target.scaleX > 5) {
       e.target.scaleX = 5
@@ -88,14 +86,12 @@ function initCanvas() {
 
     getObjDimensions(e);
   })
-
   canvas.on('object:modified', function (e) {
     e.target.scaleX = e.target.scaleX >= 0.25 ? (Math.round(e.target.scaleX * 2) / 2) : 0.5
     e.target.scaleY = e.target.scaleY >= 0.25 ? (Math.round(e.target.scaleY * 2) / 2) : 0.5
     snapToGrid(e.target);
     getObjDimensions(e);
   })
-
   canvas.observe('object:moving', function (e) {
     checkBoundingBox(e)
   })
@@ -105,6 +101,16 @@ function initCanvas() {
   canvas.observe('object:scaling', function (e) {
     checkBoundingBox(e)
   })
+
+  canvas.observe('mouse:down', function (e) {
+    rectmousedown(e);
+  });
+  canvas.observe('mouse:move', function (e) {
+    rectmousemove(e);
+  });
+  canvas.observe('mouse:up', function (e) {
+    rectmouseup(e);
+  });
 }
 
 // Code to snap items to grid
@@ -163,7 +169,7 @@ function addRect(left, top, width, height) {
     centeredRotation: true,
     snapAngle: 45,
     selectable: true
-  })
+  });
   const t = new fabric.IText(number.toString(), {
     fontFamily: 'Calibri',
     fontSize: 14,
@@ -171,7 +177,7 @@ function addRect(left, top, width, height) {
     textAlign: 'center',
     originX: 'center',
     originY: 'center'
-  })
+  });
   target = o.target;
   var zindex = canvas.getObjects().indexOf(target);
   zindex = (zindex) + 1;
@@ -185,10 +191,9 @@ function addRect(left, top, width, height) {
     type: 'table',
     id: id,
     number: zindex
-  })
-  canvas.add(g)
-  number++
-  return g
+  });
+  canvas.add(g);
+  return g;
 }
 
 // Add circle to canvas
@@ -276,7 +281,91 @@ function paste() {
     canvas.requestRenderAll();
   });
 }
-// ************** HANDLE COPY PASTE HERE ************** //
+// ************** HANDLE COPY PASTE END ************** //
+
+// ************** HANDLE RECTANGLE FREE DRAW HERE ************** //
+
+var rect, isDown, origX, origY, o;
+function rectmousedown(e) {
+  isDown = true;
+  var pointer = canvas.getPointer(e.e);
+  origX = pointer.x;
+  origY = pointer.y;
+
+  const id = generateId()
+  o = new fabric.Rect({
+    width: pointer.x - origX,
+    height: pointer.y - origY,
+    fill: tableFill,
+    stroke: tableStroke,
+    strokeWidth: 2,
+    shadow: tableShadow,
+    originX: 'center',
+    originY: 'center',
+    centeredRotation: true,
+    snapAngle: 45,
+    selectable: true
+  });
+  const t = new fabric.IText(number.toString(), {
+    fontFamily: 'Calibri',
+    fontSize: 14,
+    fill: '#fff',
+    textAlign: 'center',
+    originX: 'center',
+    originY: 'center'
+  });
+  target = o.target;
+  var zindex = canvas.getObjects().indexOf(target);
+  zindex = (zindex) + 1;
+  rect = new fabric.Group([o, t], {
+    left: origX,
+    top: origY,
+    centeredRotation: true,
+    snapAngle: 5,
+    selectable: true,
+    lockScalingX: false,
+    lockScalingY: false,
+    lockRotation: false,
+    id: id,
+    number: zindex
+  });
+
+  rect.item(0).set({
+    'fill': 'red'
+  });
+
+  canvas.add(rect);
+}
+
+function rectmousemove(e) {
+  if (!isDown) return;
+  var pointer = canvas.getPointer(e.e);
+
+  if (origX > pointer.x) {
+    rect.set({ left: Math.abs(pointer.x) });
+  }
+  if (origY > pointer.y) {
+    rect.set({ top: Math.abs(pointer.y) });
+  }
+
+  rect.item(0).set({ width: Math.abs(origX - pointer.x) });
+  rect.item(0).set({ height: Math.abs(origY - pointer.y) });
+
+  rect.set({ width: Math.abs(origX - pointer.x) });
+  rect.set({ height: Math.abs(origY - pointer.y) });
+  canvas.renderAll();
+
+}
+
+function rectmouseup(e) {
+  isDown = false;
+  rect.setCoords();
+
+  // canvas.setActiveObject(rect);
+  console.log(rect);
+  canvas.off('mouse:down').off('mouse:move').off('mouse:up');
+}
+// ************** HANDLE RECTANGLE FREE DRAW END ************** //
 
 // ************** HANDLE OBJECT ORDERING HERE ************** //
 
@@ -286,16 +375,16 @@ function addToSortableList(obj) {
 
   zindex = (zindex) + 1;
 
-  $("#sortable").append('<li class="ui-state-default list-group-item" data-id="' + target.id +'" >' + zindex + '</li>');
+  $("#sortable").append('<li class="ui-state-default list-group-item" data-id="' + target.id + '" >' + zindex + '</li>');
   $("#defaultItem").remove();
 }
 
 function orderChanged() {
-  var listInOrder = $("#sortable").sortable("toArray", {attribute: 'data-id'} );
+  var listInOrder = $("#sortable").sortable("toArray", { attribute: 'data-id' });
 
-  listInOrder.forEach(function(item, i){
-    canvas.getObjects().forEach(function(o){
-      if(o.id == item){
+  listInOrder.forEach(function (item, i) {
+    canvas.getObjects().forEach(function (o) {
+      if (o.id == item) {
         o.moveTo(i);
         o.set('text', i);
       }
@@ -305,7 +394,7 @@ function orderChanged() {
   canvas.renderAll();
 }
 
-// ************** HANDLE OBJECT ORDERING HERE ************** //
+// ************** HANDLE OBJECT ORDERING END ************** //
 
 function getSelection() {
   aOG = canvas.getActiveObject() == null ? canvas.getActiveGroup() : canvas.getActiveObject();
@@ -371,33 +460,33 @@ $("#paste").click(function () {
   paste();
 });
 
-$("#bringToFront").click(function (){
+$("#bringToFront").click(function () {
   const o = getSelection();
   canvas.bringToFront(o);
 });
 
-$("#bringForward").click(function (){
+$("#bringForward").click(function () {
   const o = getSelection();
   canvas.bringForward(o);
 });
 
-$("#sendBackwards").click(function (){
+$("#sendBackwards").click(function () {
   const o = getSelection();
   canvas.sendBackwards(o);
 });
 
-$("#sendToBack").click(function (){
+$("#sendToBack").click(function () {
   const o = getSelection();
   canvas.sendToBack(o);
 });
 
-$("#changeOrder").click(function (){
+$("#changeOrder").click(function () {
   orderChanged();
 });
 
 // Handle item sorting
-$( function() {
-  $( "#sortable" ).sortable();
+$(function () {
+  $("#sortable").sortable();
 });
 
 initCanvas();
