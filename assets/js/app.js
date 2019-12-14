@@ -103,13 +103,19 @@ function initCanvas() {
   })
 
   canvas.observe('mouse:down', function (e) {
-    rectmousedown(e);
+    if(canvas.DrawingMode) {
+      rectmousedown(e);
+    }
   });
   canvas.observe('mouse:move', function (e) {
-    rectmousemove(e);
+    if(canvas.DrawingMode) {
+      rectmousemove(e);
+    }
   });
   canvas.observe('mouse:up', function (e) {
-    rectmouseup(e);
+    if(canvas.DrawingMode) {
+      rectmouseup(e);
+    }
   });
 }
 
@@ -336,10 +342,6 @@ function rectmousedown(e) {
     number: zindex
   });
 
-  rect.item(0).set({
-    'fill': 'red'
-  });
-
   canvas.add(rect);
 }
 
@@ -360,16 +362,13 @@ function rectmousemove(e) {
   rect.set({ width: Math.abs(origX - pointer.x) });
   rect.set({ height: Math.abs(origY - pointer.y) });
   canvas.renderAll();
-
 }
 
 function rectmouseup(e) {
   isDown = false;
   rect.setCoords();
-
-  // canvas.setActiveObject(rect);
-  console.log(rect);
-  canvas.off('mouse:down').off('mouse:move').off('mouse:up');
+  canvas.setActiveObject(rect);
+  canvas.DrawingMode = false;
 }
 // ************** HANDLE RECTANGLE FREE DRAW END ************** //
 
