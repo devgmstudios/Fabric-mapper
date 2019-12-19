@@ -2,7 +2,7 @@ let canvas
 let file
 let bgImg, bgJSON, jsonImport
 
-const grid = 8
+const grid = 3;
 const backgroundColor = '#f8f8f8'
 const lineStroke = '#ebebeb'
 const tableFill = 'rgba(255,0, 0, 0.5)'
@@ -50,7 +50,6 @@ function initCanvas() {
     fabricToJSON();
   })
   canvas.on('object:moving', function (e) {
-    // snapToGrid(e.target);
     getObjDimensions(e);
     fabricToJSON();
   })
@@ -70,7 +69,6 @@ function initCanvas() {
         e.target.strokeWidth = e.target.strokeWidthUnscaled / e.target.scaleY
       }
     }
-
     getObjDimensions(e);
     fabricToJSON();
   })
@@ -205,8 +203,14 @@ function getObjDimensions(obj) {
 
   let ratio = gcd(width, height);
 
-  heightObj = target.height * target.scaleY * (height / ratio);
-  widthObj = target.width * target.scaleX * (width / ratio);
+  let widthRatio = width / canvas.width;
+  let heightRatio = height / canvas.height;
+
+  heightObj = target.height * target.scaleY * (heightRatio);
+  widthObj = target.width * target.scaleX * (widthRatio);
+
+  heightObj = Math.round(heightObj);
+  widthObj = Math.round(widthObj);
 
   $("#heightObj").val(heightObj);
   $("#widthObj").val(widthObj);
@@ -320,7 +324,7 @@ function rectmousemove(e) {
   rect.set({ width: Math.abs(origX - pointer.x) });
   rect.set({ height: Math.abs(origY - pointer.y) });
 
-  snapToGrid(e.target);
+  // snapToGrid(e.target);
 
   canvas.renderAll();
 }
@@ -354,7 +358,7 @@ function orderChanged() {
     canvas.getObjects().forEach(function (o) {
       if (o.id == item) {
         o.moveTo(i + 1);
-        o.set('text', i + 1);
+        // o.set('text', i + 1);
       }
     });
   });
@@ -392,14 +396,19 @@ function fabricToJSON() {
 
     canvas.getObjects().forEach(function (o) {
       let target = o;
-      heightObj = target.height * target.scaleY * heightRatio;
-      widthObj = target.width * target.scaleX * widthRatio ;
+      heightObj = Math.round(target.height * target.scaleY * heightRatio);
+      widthObj = Math.round(target.width * target.scaleX * widthRatio) ;
 
+      objLeft = Math.round(o.left * widthRatio);
+      objTop = Math.round(o.top * heightRatio);
+      objRight = Math.round((o.left + o.width) * widthRatio);
+      objBottom = Math.round((o.top + o.height) * heightRatio);
+    
       baseJSON.areas.push({
         order: canvas.getObjects().indexOf(o) + 1,
         width: widthObj,
         height: heightObj,
-        coords: (o.left * widthRatio) + "," + (o.top * heightRatio) + "," + ((o.left + o.width) * widthRatio) + "," + ((o.top + o.height) * heightRatio),
+        coords: objLeft + "," + objTop + "," + objRight + "," + objBottom,
         shape: o.type,
         rotate: o.get('angle')
       });
@@ -413,6 +422,8 @@ function fabricToJSON() {
 
     let fileName;
     let ratio = gcd(width, height);
+    let widthRatio = width / canvas.width;
+    let heightRatio = height / canvas.height;
 
     frameHeight = height / ratio;
     frameWidth = width / ratio;
@@ -432,16 +443,21 @@ function fabricToJSON() {
     }
 
     canvas.getObjects().forEach(function (o) {
-
+      
       let target = o;
-      heightObj = target.height * target.scaleY * frameHeight;
-      widthObj = target.width * target.scaleX * frameWidth;
+      heightObj = Math.round(target.height * target.scaleY * heightRatio);
+      widthObj = Math.round(target.width * target.scaleX * widthRatio) ;
+
+      objLeft = Math.round(o.left * widthRatio);
+      objTop = Math.round(o.top * heightRatio);
+      objRight = Math.round((o.left + o.width) * widthRatio);
+      objBottom = Math.round((o.top + o.height) * heightRatio);
 
       baseJSON.areas.push({
         order: canvas.getObjects().indexOf(o) + 1,
         width: widthObj,
         height: heightObj,
-        coords: (o.left * frameWidth) + "," + (o.top * frameHeight) + "," + ((o.left + o.width) * frameWidth) + "," + ((o.top + o.height) * frameHeight),
+        coords: objLeft + "," + objTop + "," + objRight + "," + objBottom,
         shape: o.type,
         rotate: o.get('angle')
       });
@@ -519,7 +535,7 @@ function loadFabricBackground(data) {
       scaleY: canvas.height / img.height
     });
 
-    console.log(canvas);
+    fabricToJSON();
   });
 }
 
