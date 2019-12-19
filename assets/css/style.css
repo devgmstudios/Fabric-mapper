@@ -49,3 +49,15 @@
     padding: 1em;
     color: white;
 }
+
+div.editable {
+    width: 100%;
+    height: 200px;
+    border: 1px solid #ccc;
+    padding: 5px;
+    overflow: scroll;
+}
+
+strong {
+  font-weight: bold;
+}

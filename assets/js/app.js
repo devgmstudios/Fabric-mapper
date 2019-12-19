@@ -5,7 +5,7 @@ let bgImg
 const grid = 8
 const backgroundColor = '#f8f8f8'
 const lineStroke = '#ebebeb'
-const tableFill = 'rgba(255,0, 0, 1)'
+const tableFill = 'rgba(255,0, 0, 0.5)'
 const tableStroke = 'rgba(255,0, 0, 1)'
 const tableShadow = 'rgba(0, 0, 0, 0.4) 3px 3px 7px'
 
@@ -32,24 +32,7 @@ function initCanvas() {
       var reader = new FileReader();
       reader.onload = function (f) {
         var data = f.target.result;
-        fabric.Image.fromURL(data, function (img) {
-
-          bgImg = img;
-          canvasWidth = $(".canvas-area").width();
-          canvasHeight = (img.height / img.width) * canvasWidth;
-
-          canvas.setHeight(canvasHeight);
-          canvas.setWidth(canvasWidth);
-
-          document.getElementById("width").value = img.width;
-          document.getElementById("height").value = img.height;
-
-          canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas), {
-            scaleX: canvas.width / img.width,
-            scaleY: canvas.height / img.height
-          });
-
-        });
+        loadFabricBackground(data);
       };
       reader.readAsDataURL(file);
       canvas.setBackgroundImage(0, canvas.renderAll.bind(canvas));
@@ -67,7 +50,7 @@ function initCanvas() {
     fabricToJSON();
   })
   canvas.on('object:moving', function (e) {
-    snapToGrid(e.target);
+    // snapToGrid(e.target);
     getObjDimensions(e);
     fabricToJSON();
   })
@@ -92,9 +75,9 @@ function initCanvas() {
     fabricToJSON();
   })
   canvas.on('object:modified', function (e) {
-    e.target.scaleX = e.target.scaleX >= 0.25 ? (Math.round(e.target.scaleX * 2) / 2) : 0.5
-    e.target.scaleY = e.target.scaleY >= 0.25 ? (Math.round(e.target.scaleY * 2) / 2) : 0.5
-    snapToGrid(e.target);
+    // e.target.scaleX = e.target.scaleX >= 0.25 ? (Math.round(e.target.scaleX * 2) / 2) : 0.5
+    // e.target.scaleY = e.target.scaleY >= 0.25 ? (Math.round(e.target.scaleY * 2) / 2) : 0.5
+    // snapToGrid(e.target);
     getObjDimensions(e);
     fabricToJSON();
 
@@ -112,6 +95,7 @@ function initCanvas() {
     if (canvas.DrawingMode) {
       rectmousedown(e);
     }
+    // getObjDimensions(e);
   });
   canvas.observe('mouse:move', function (e) {
     if (canvas.DrawingMode) {
@@ -219,7 +203,7 @@ function getObjDimensions(obj) {
   const width = bgImg ? bgImg.width : 1;
   const height = bgImg ? bgImg.height : 1;
 
-  let ratio = gcd(width, height);  
+  let ratio = gcd(width, height);
 
   heightObj = target.height * target.scaleY * (height / ratio);
   widthObj = target.width * target.scaleX * (width / ratio);
@@ -381,11 +365,11 @@ function orderChanged() {
 
 // ************** HANDLE OBJECT ORDERING END ************** //
 
-// ************** HANDLE EXPORT HERE ************** //
+// ************** HANDLE JSON HERE ************** //
 
 // Find greatest common divider
-function gcd (a, b) {
-  return (b == 0) ? a : gcd (b, a%b);
+function gcd(a, b) {
+  return (b == 0) ? a : gcd(b, a % b);
 }
 
 function fabricToJSON() {
@@ -398,9 +382,9 @@ function fabricToJSON() {
   frameHeight = height / ratio;
   frameWidth = width / ratio;
 
-  if(file) {
+  if (file) {
     fileName = file.name;
-  }else {
+  } else {
     fileName = '';
   }
 
@@ -419,12 +403,12 @@ function fabricToJSON() {
     let target = o;
     heightObj = target.height * target.scaleY * frameHeight;
     widthObj = target.width * target.scaleX * frameWidth;
-  
+
     baseJSON.areas.push({
       order: canvas.getObjects().indexOf(o) + 1,
       width: widthObj,
       height: heightObj,
-      coords: (o.left * frameWidth) + ", " + (o.top * frameHeight) + ", " + ((o.left + o.width) * frameWidth) + ", " + ((o.top + o.height) * frameHeight) ,
+      coords: (o.left * frameWidth) + "," + (o.top * frameHeight) + "," + ((o.left + o.width) * frameWidth) + "," + ((o.top + o.height) * frameHeight),
       shape: o.type,
       rotate: o.get('angle')
     });
@@ -432,7 +416,86 @@ function fabricToJSON() {
 
   $("#jsonOutput").val(JSON.stringify(baseJSON, null, 2));
 }
-// ************** HANDLE EXPORT END ************** //
+
+// JSON import and related
+function JSONToFabric(data) {
+
+  try {
+    parsed = JSON.parse(data);
+    // Get BG and load onto canvas
+    backgroundImage = parsed.details[0].fileName;
+
+    canvasWidth = $(".canvas-area").width();
+    canvasHeight = (parsed.details[0].height / parsed.details[0].width) * canvasWidth;
+
+    canvas.setHeight(canvasHeight);
+    canvas.setWidth(canvasWidth);
+
+    loadFabricBackground(backgroundImage);
+
+    // let canvasRatio = gcd(canvas.width, canvas.height);
+    let canvasRatio = gcd(parsed.details[0].width, parsed.details[0].height);
+
+    frameHeightCanvas = parsed.details[0].height / canvasRatio ;
+    frameWidthCanvas = parsed.details[0].width / canvasRatio ;
+    
+    frameSize = parsed.details[0].frameSize.split('x')
+
+    widthRatio = parsed.details[0].width / canvas.width;
+    heightRatio = parsed.details[0].height / canvas.height ;
+
+    if(parsed.areas) {
+      cvObjects = parsed.areas;
+
+      cvObjects.forEach(function(obj) {
+        if(obj.shape == "rect") {
+          objWidth = ((obj.width) / frameWidthCanvas);
+          objHeight = ((obj.height) / frameHeightCanvas);
+
+          coordinates = obj.coords.split(",");
+          objLeft = (coordinates[0] / frameWidthCanvas);
+          objTop = (coordinates[1] / frameHeightCanvas);
+
+          const o = addRect(objLeft, objTop, objWidth, objHeight);
+          o.set({angle: obj.rotate});
+          canvas.setActiveObject(o);
+        }
+      });
+      canvas.renderAll();
+
+    }
+
+
+  } catch (e) {
+    alert("Error in JSON data. Check console for details"); // error in the above string (in this case, yes)!
+    console.error(e);
+  }
+
+}
+
+function loadFabricBackground(data) {
+  fabric.Image.fromURL(data, function (img) {
+
+    bgImg = img;
+    canvasWidth = $(".canvas-area").width();
+    canvasHeight = (img.height / img.width) * canvasWidth;
+
+    canvas.setHeight(canvasHeight);
+    canvas.setWidth(canvasWidth);
+
+    document.getElementById("width").value = img.width;
+    document.getElementById("height").value = img.height;
+
+    canvas.setBackgroundImage(img, canvas.renderAll.bind(canvas), {
+      scaleX: canvas.width / img.width,
+      scaleY: canvas.height / img.height
+    });
+
+    console.log(canvas);
+  });
+}
+
+// ************** HANDLE JSON END ************** //
 
 function getSelection() {
   aOG = canvas.getActiveObject() == null ? canvas.getActiveGroup() : canvas.getActiveObject();
@@ -512,6 +575,12 @@ $("#sendToBack").click(function () {
 
 $("#changeOrder").click(function () {
   orderChanged();
+});
+
+$("#submitJSON").click(function (){
+  data = $("#jsonInput").val();
+  JSONToFabric(data);
+  $("#jsonModal").modal('hide');
 });
 
 // Handle item sorting
