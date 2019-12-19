@@ -81,14 +81,14 @@ function initCanvas() {
 
   })
   canvas.observe('object:moving', function (e) {
-    checkBoundingBox(e);
+    // checkBoundingBox(e);
     fabricToJSON();
   })
   canvas.observe('object:rotating', function (e) {
     // checkBoundingBox(e)
   })
   canvas.observe('object:scaling', function (e) {
-    checkBoundingBox(e)
+    // checkBoundingBox(e)
   })
   canvas.observe('mouse:down', function (e) {
     if (canvas.DrawingMode) {
