@@ -81,10 +81,11 @@ function initCanvas() {
 
   })
   canvas.observe('object:moving', function (e) {
-    checkBoundingBox(e)
+    checkBoundingBox(e);
+    fabricToJSON();
   })
   canvas.observe('object:rotating', function (e) {
-    checkBoundingBox(e)
+    // checkBoundingBox(e)
   })
   canvas.observe('object:scaling', function (e) {
     checkBoundingBox(e)
@@ -358,7 +359,6 @@ function orderChanged() {
     canvas.getObjects().forEach(function (o) {
       if (o.id == item) {
         o.moveTo(i + 1);
-        // o.set('text', i + 1);
       }
     });
   });
@@ -486,8 +486,10 @@ function JSONToFabric(data) {
 
     bgJSON = backgroundImage;
     jsonImport = parsed;
-    widthRatio = parsed.details[0].width / canvas.width;
-    heightRatio = parsed.details[0].height / canvas.height;
+    widthRatio = Math.round((parsed.details[0].width / canvas.width) * 100) / 100;
+    heightRatio = Math.round((parsed.details[0].height / canvas.height) * 100) / 100 ;
+    let offsetO = $("#workspace").offset();
+    console.log(offsetO);
 
     if (parsed.areas) {
       cvObjects = parsed.areas;
