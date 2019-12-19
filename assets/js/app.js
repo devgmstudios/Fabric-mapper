@@ -504,7 +504,7 @@ function JSONToFabric(data) {
           objTop = (coordinates[1] / heightRatio);
 
           const o = addRect(objLeft, objTop, objWidth, objHeight);
-          o.set({ angle: obj.rotate });
+          o.rotate(obj.rotate);
           canvas.setActiveObject(o);
         }
       });
