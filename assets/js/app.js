@@ -304,7 +304,6 @@ function rectmousedown(e) {
     type: 'rect'
   });
 
-  canvas.add(rect);
 }
 
 function rectmousemove(e) {
@@ -323,15 +322,16 @@ function rectmousemove(e) {
 
   rect.set({ width: Math.abs(origX - pointer.x) });
   rect.set({ height: Math.abs(origY - pointer.y) });
-
-  // snapToGrid(e.target);
-
-  canvas.renderAll();
+  
 }
 
 function rectmouseup(e) {
   isDown = false;
+  canvas.add(rect);
+
   rect.setCoords();
+  canvas.renderAll();
+
   canvas.setActiveObject(rect);
   canvas.DrawingMode = false;
 }
