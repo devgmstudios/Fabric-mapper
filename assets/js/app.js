@@ -1,6 +1,6 @@
 let canvas
 let file
-let bgImg
+let bgImg, bgJSON, jsonImport
 
 const grid = 8
 const backgroundColor = '#f8f8f8'
@@ -374,47 +374,82 @@ function gcd(a, b) {
 
 function fabricToJSON() {
 
-  const width = bgImg ? bgImg.width : 1;
-  const height = bgImg ? bgImg.height : 1;
+  // Needs to be modified to handle imports
+  if (bgJSON) {
 
-  let ratio = gcd(width, height);
+    frameRatio = jsonImport.details[0].frameSize.split('x');
+    let baseJSON = {
+      details: [{
+        frameSize: jsonImport.details[0].frameSize,
+        fileName: jsonImport.details[0].fileName,
+        width: jsonImport.details[0].width,
+        height: jsonImport.details[0].height
+      }],
+      areas: []
+    }
+    let widthRatio = jsonImport.details[0].width / canvas.width;
+    let heightRatio = jsonImport.details[0].height / canvas.height;
 
-  frameHeight = height / ratio;
-  frameWidth = width / ratio;
+    canvas.getObjects().forEach(function (o) {
+      let target = o;
+      heightObj = target.height * target.scaleY * heightRatio;
+      widthObj = target.width * target.scaleX * widthRatio ;
 
-  if (file) {
-    fileName = file.name;
-  } else {
-    fileName = '';
-  }
-
-  let baseJSON = {
-    details: [{
-      frameSize: frameWidth + "x" + frameHeight,
-      fileName: "https://data.creatorpresets.com/api/" + fileName,
-      width: width,
-      height: height
-    }],
-    areas: []
-  }
-
-  canvas.getObjects().forEach(function (o) {
-
-    let target = o;
-    heightObj = target.height * target.scaleY * frameHeight;
-    widthObj = target.width * target.scaleX * frameWidth;
-
-    baseJSON.areas.push({
-      order: canvas.getObjects().indexOf(o) + 1,
-      width: widthObj,
-      height: heightObj,
-      coords: (o.left * frameWidth) + "," + (o.top * frameHeight) + "," + ((o.left + o.width) * frameWidth) + "," + ((o.top + o.height) * frameHeight),
-      shape: o.type,
-      rotate: o.get('angle')
+      baseJSON.areas.push({
+        order: canvas.getObjects().indexOf(o) + 1,
+        width: widthObj,
+        height: heightObj,
+        coords: (o.left * widthRatio) + "," + (o.top * heightRatio) + "," + ((o.left + o.width) * widthRatio) + "," + ((o.top + o.height) * heightRatio),
+        shape: o.type,
+        rotate: o.get('angle')
+      });
     });
-  });
+    
+    $("#jsonOutput").val(JSON.stringify(baseJSON, null, 2));    
 
-  $("#jsonOutput").val(JSON.stringify(baseJSON, null, 2));
+  } else if (file) {
+    const width = bgImg ? bgImg.width : 1;
+    const height = bgImg ? bgImg.height : 1;
+
+    let fileName;
+    let ratio = gcd(width, height);
+
+    frameHeight = height / ratio;
+    frameWidth = width / ratio;
+
+    if (file) {
+      fileName = file.name;
+    }
+
+    let baseJSON = {
+      details: [{
+        frameSize: frameWidth + "x" + frameHeight,
+        fileName: "https://data.creatorpresets.com/api/" + fileName,
+        width: width,
+        height: height
+      }],
+      areas: []
+    }
+
+    canvas.getObjects().forEach(function (o) {
+
+      let target = o;
+      heightObj = target.height * target.scaleY * frameHeight;
+      widthObj = target.width * target.scaleX * frameWidth;
+
+      baseJSON.areas.push({
+        order: canvas.getObjects().indexOf(o) + 1,
+        width: widthObj,
+        height: heightObj,
+        coords: (o.left * frameWidth) + "," + (o.top * frameHeight) + "," + ((o.left + o.width) * frameWidth) + "," + ((o.top + o.height) * frameHeight),
+        shape: o.type,
+        rotate: o.get('angle')
+      });
+    });
+
+    $("#jsonOutput").val(JSON.stringify(baseJSON, null, 2));
+  }
+
 }
 
 // JSON import and related
@@ -433,22 +468,16 @@ function JSONToFabric(data) {
 
     loadFabricBackground(backgroundImage);
 
-    // let canvasRatio = gcd(canvas.width, canvas.height);
-    let canvasRatio = gcd(parsed.details[0].width, parsed.details[0].height);
-
-    frameHeightCanvas = parsed.details[0].height / canvasRatio ;
-    frameWidthCanvas = parsed.details[0].width / canvasRatio ;
-    
-    frameSize = parsed.details[0].frameSize.split('x')
-
+    bgJSON = backgroundImage;
+    jsonImport = parsed;
     widthRatio = parsed.details[0].width / canvas.width;
-    heightRatio = parsed.details[0].height / canvas.height ;
+    heightRatio = parsed.details[0].height / canvas.height;
 
-    if(parsed.areas) {
+    if (parsed.areas) {
       cvObjects = parsed.areas;
 
-      cvObjects.forEach(function(obj) {
-        if(obj.shape == "rect") {
+      cvObjects.forEach(function (obj) {
+        if (obj.shape == "rect") {
           objWidth = ((obj.width) / widthRatio);
           objHeight = ((obj.height) / heightRatio);
 
@@ -457,12 +486,11 @@ function JSONToFabric(data) {
           objTop = (coordinates[1] / heightRatio);
 
           const o = addRect(objLeft, objTop, objWidth, objHeight);
-          o.set({angle: obj.rotate});
+          o.set({ angle: obj.rotate });
           canvas.setActiveObject(o);
         }
       });
       canvas.renderAll();
-
     }
 
 
@@ -577,7 +605,7 @@ $("#changeOrder").click(function () {
   orderChanged();
 });
 
-$("#submitJSON").click(function (){
+$("#submitJSON").click(function () {
   data = $("#jsonInput").val();
   JSONToFabric(data);
   $("#jsonModal").modal('hide');
