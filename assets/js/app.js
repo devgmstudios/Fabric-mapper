@@ -449,12 +449,12 @@ function JSONToFabric(data) {
 
       cvObjects.forEach(function(obj) {
         if(obj.shape == "rect") {
-          objWidth = ((obj.width) / frameWidthCanvas);
-          objHeight = ((obj.height) / frameHeightCanvas);
+          objWidth = ((obj.width) / widthRatio);
+          objHeight = ((obj.height) / heightRatio);
 
           coordinates = obj.coords.split(",");
-          objLeft = (coordinates[0] / frameWidthCanvas);
-          objTop = (coordinates[1] / frameHeightCanvas);
+          objLeft = (coordinates[0] / widthRatio);
+          objTop = (coordinates[1] / heightRatio);
 
           const o = addRect(objLeft, objTop, objWidth, objHeight);
           o.set({angle: obj.rotate});
