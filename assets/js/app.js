@@ -387,10 +387,10 @@ function fabricToJSON() {
       heightObj = Math.round(target.height * target.scaleY * heightRatio);
       widthObj = Math.round(target.width * target.scaleX * widthRatio) ;
 
-      objLeft = Math.round(o.left * widthRatio) - (widthObj / 2) ;
-      objTop = Math.round(o.top * heightRatio) - (heightObj / 2) ;
-      objRight = Math.round((o.left + o.width) * widthRatio) - (widthObj / 2) ;
-      objBottom = Math.round((o.top + o.height) * heightRatio) - (heightObj / 2) ;
+      objLeft = Math.abs(Math.round(o.left * widthRatio) - (widthObj / 2)) ;
+      objTop = Math.abs(Math.round(o.top * heightRatio) - (heightObj / 2)) ;
+      objRight = Math.abs(Math.round((o.left + o.width) * widthRatio) - (widthObj / 2)) ;
+      objBottom = Math.abs(Math.round((o.top + o.height) * heightRatio) - (heightObj / 2)) ;
     
       baseJSON.areas.push({
         order: canvas.getObjects().indexOf(o) + 1,
@@ -436,10 +436,10 @@ function fabricToJSON() {
       heightObj = Math.round(target.height * target.scaleY * heightRatio);
       widthObj = Math.round(target.width * target.scaleX * widthRatio) ;
 
-      objLeft = Math.round(o.left * widthRatio) - (widthObj / 2) ;
-      objTop = Math.round(o.top * heightRatio) - (heightObj / 2) ;
-      objRight = Math.round((o.left + o.width) * widthRatio) - (widthObj / 2) ;
-      objBottom = Math.round((o.top + o.height) * heightRatio) - (heightObj / 2) ;
+      objLeft = Math.abs(Math.round(o.left * widthRatio) - (widthObj / 2)) ;
+      objTop = Math.abs(Math.round(o.top * heightRatio) - (heightObj / 2)) ;
+      objRight = Math.abs(Math.round((o.left + o.width) * widthRatio) - (widthObj / 2)) ;
+      objBottom = Math.abs(Math.round((o.top + o.height) * heightRatio) - (heightObj / 2)) ;
 
       baseJSON.areas.push({
         order: canvas.getObjects().indexOf(o) + 1,
