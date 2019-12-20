@@ -54,21 +54,6 @@ function initCanvas() {
     fabricToJSON();
   })
   canvas.on('object:scaling', function (e) {
-    if (e.target.scaleX > 5) {
-      e.target.scaleX = 5
-    }
-    if (e.target.scaleY > 5) {
-      e.target.scaleY = 5
-    }
-    if (!e.target.strokeWidthUnscaled && e.target.strokeWidth) {
-      e.target.strokeWidthUnscaled = e.target.strokeWidth
-    }
-    if (e.target.strokeWidthUnscaled) {
-      e.target.strokeWidth = e.target.strokeWidthUnscaled / e.target.scaleX
-      if (e.target.strokeWidth === e.target.strokeWidthUnscaled) {
-        e.target.strokeWidth = e.target.strokeWidthUnscaled / e.target.scaleY
-      }
-    }
     getObjDimensions(e);
     fabricToJSON();
   })
@@ -86,6 +71,7 @@ function initCanvas() {
   })
   canvas.observe('object:rotating', function (e) {
     // checkBoundingBox(e)
+    console.log(e);
   })
   canvas.observe('object:scaling', function (e) {
     // checkBoundingBox(e)
@@ -187,6 +173,8 @@ function addRect(left, top, width, height) {
     lockScalingY: false,
     lockRotation: false,
     type: 'rect',
+    originX: "center",
+    originY: "center",
     id: id
   });
 
@@ -399,10 +387,10 @@ function fabricToJSON() {
       heightObj = Math.round(target.height * target.scaleY * heightRatio);
       widthObj = Math.round(target.width * target.scaleX * widthRatio) ;
 
-      objLeft = Math.round(o.left * widthRatio);
-      objTop = Math.round(o.top * heightRatio);
-      objRight = Math.round((o.left + o.width) * widthRatio);
-      objBottom = Math.round((o.top + o.height) * heightRatio);
+      objLeft = Math.round(o.left * widthRatio) - (widthObj / 2) ;
+      objTop = Math.round(o.top * heightRatio) - (heightObj / 2) ;
+      objRight = Math.round((o.left + o.width) * widthRatio) - (widthObj / 2) ;
+      objBottom = Math.round((o.top + o.height) * heightRatio) - (heightObj / 2) ;
     
       baseJSON.areas.push({
         order: canvas.getObjects().indexOf(o) + 1,
@@ -414,7 +402,7 @@ function fabricToJSON() {
       });
     });
     
-    $("#jsonOutput").val(JSON.stringify(baseJSON, null, 2));    
+    $("#jsonOutput").val(JSON.stringify(baseJSON, null, 2));
 
   } else if (file) {
     const width = bgImg ? bgImg.width : 1;
@@ -448,10 +436,10 @@ function fabricToJSON() {
       heightObj = Math.round(target.height * target.scaleY * heightRatio);
       widthObj = Math.round(target.width * target.scaleX * widthRatio) ;
 
-      objLeft = Math.round(o.left * widthRatio);
-      objTop = Math.round(o.top * heightRatio);
-      objRight = Math.round((o.left + o.width) * widthRatio);
-      objBottom = Math.round((o.top + o.height) * heightRatio);
+      objLeft = Math.round(o.left * widthRatio) - (widthObj / 2) ;
+      objTop = Math.round(o.top * heightRatio) - (heightObj / 2) ;
+      objRight = Math.round((o.left + o.width) * widthRatio) - (widthObj / 2) ;
+      objBottom = Math.round((o.top + o.height) * heightRatio) - (heightObj / 2) ;
 
       baseJSON.areas.push({
         order: canvas.getObjects().indexOf(o) + 1,
@@ -472,6 +460,10 @@ function fabricToJSON() {
 function JSONToFabric(data) {
 
   try {
+    if (canvas) {
+      canvas.clear()
+    }
+  
     parsed = JSON.parse(data);
     // Get BG and load onto canvas
     backgroundImage = parsed.details[0].fileName;
@@ -488,8 +480,6 @@ function JSONToFabric(data) {
     jsonImport = parsed;
     widthRatio = Math.round((parsed.details[0].width / canvas.width) * 100) / 100;
     heightRatio = Math.round((parsed.details[0].height / canvas.height) * 100) / 100 ;
-    let offsetO = $("#workspace").offset();
-    console.log(offsetO);
 
     if (parsed.areas) {
       cvObjects = parsed.areas;
@@ -500,11 +490,14 @@ function JSONToFabric(data) {
           objHeight = ((obj.height) / heightRatio);
 
           coordinates = obj.coords.split(",");
-          objLeft = (coordinates[0] / widthRatio);
-          objTop = (coordinates[1] / heightRatio);
+          objLeft = (coordinates[0] / widthRatio) + (objWidth / 2);
+          objTop = (coordinates[1] / heightRatio) + (objHeight / 2) ;
 
           const o = addRect(objLeft, objTop, objWidth, objHeight);
-          o.rotate(obj.rotate);
+          // o.rotate(obj.rotate);
+          // o.set({"originX": "center", "originY": "center"});
+          o.set({"angle": obj.rotate});
+          // o.set({"originX": "top", "originY": "left"});
           canvas.setActiveObject(o);
         }
       });
