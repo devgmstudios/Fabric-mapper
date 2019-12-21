@@ -311,7 +311,7 @@ function rectmousemove(e) {
 
   rect.set({ width: Math.abs(origX - pointer.x) });
   rect.set({ height: Math.abs(origY - pointer.y) });
-  
+
 }
 
 function rectmouseup(e) {
@@ -385,13 +385,13 @@ function fabricToJSON() {
     canvas.getObjects().forEach(function (o) {
       let target = o;
       heightObj = Math.round(target.height * target.scaleY * heightRatio);
-      widthObj = Math.round(target.width * target.scaleX * widthRatio) ;
+      widthObj = Math.round(target.width * target.scaleX * widthRatio);
 
-      objLeft = Math.abs(Math.round(o.left * widthRatio) - (widthObj / 2)) ;
-      objTop = Math.abs(Math.round(o.top * heightRatio) - (heightObj / 2)) ;
-      objRight = Math.abs(Math.round((o.left + o.width) * widthRatio) - (widthObj / 2)) ;
-      objBottom = Math.abs(Math.round((o.top + o.height) * heightRatio) - (heightObj / 2)) ;
-    
+      objLeft = Math.abs(Math.round(o.left * widthRatio) - (widthObj / 2));
+      objTop = Math.abs(Math.round(o.top * heightRatio) - (heightObj / 2));
+      objRight = Math.abs(Math.round((o.left + o.width) * widthRatio) - (widthObj / 2));
+      objBottom = Math.abs(Math.round((o.top + o.height) * heightRatio) - (heightObj / 2));
+
       baseJSON.areas.push({
         order: canvas.getObjects().indexOf(o) + 1,
         width: widthObj,
@@ -401,7 +401,7 @@ function fabricToJSON() {
         rotate: o.get('angle')
       });
     });
-    
+
     $("#jsonOutput").val(JSON.stringify(baseJSON, null, 2));
 
   } else if (file) {
@@ -431,15 +431,15 @@ function fabricToJSON() {
     }
 
     canvas.getObjects().forEach(function (o) {
-      
+
       let target = o;
       heightObj = Math.round(target.height * target.scaleY * heightRatio);
-      widthObj = Math.round(target.width * target.scaleX * widthRatio) ;
+      widthObj = Math.round(target.width * target.scaleX * widthRatio);
 
-      objLeft = Math.abs(Math.round(o.left * widthRatio) - (widthObj / 2)) ;
-      objTop = Math.abs(Math.round(o.top * heightRatio) - (heightObj / 2)) ;
-      objRight = Math.abs(Math.round((o.left + o.width) * widthRatio) - (widthObj / 2)) ;
-      objBottom = Math.abs(Math.round((o.top + o.height) * heightRatio) - (heightObj / 2)) ;
+      objLeft = Math.abs(Math.round(o.left * widthRatio) - (widthObj / 2));
+      objTop = Math.abs(Math.round(o.top * heightRatio) - (heightObj / 2));
+      objRight = Math.abs(Math.round((o.left + o.width) * widthRatio) - (widthObj / 2));
+      objBottom = Math.abs(Math.round((o.top + o.height) * heightRatio) - (heightObj / 2));
 
       baseJSON.areas.push({
         order: canvas.getObjects().indexOf(o) + 1,
@@ -463,7 +463,7 @@ function JSONToFabric(data) {
     if (canvas) {
       canvas.clear()
     }
-  
+
     parsed = JSON.parse(data);
     // Get BG and load onto canvas
     backgroundImage = parsed.details[0].fileName;
@@ -479,7 +479,7 @@ function JSONToFabric(data) {
     bgJSON = backgroundImage;
     jsonImport = parsed;
     widthRatio = Math.round((parsed.details[0].width / canvas.width) * 100) / 100;
-    heightRatio = Math.round((parsed.details[0].height / canvas.height) * 100) / 100 ;
+    heightRatio = Math.round((parsed.details[0].height / canvas.height) * 100) / 100;
 
     if (parsed.areas) {
       cvObjects = parsed.areas;
@@ -491,12 +491,12 @@ function JSONToFabric(data) {
 
           coordinates = obj.coords.split(",");
           objLeft = (coordinates[0] / widthRatio) + (objWidth / 2);
-          objTop = (coordinates[1] / heightRatio) + (objHeight / 2) ;
+          objTop = (coordinates[1] / heightRatio) + (objHeight / 2);
 
           const o = addRect(objLeft, objTop, objWidth, objHeight);
           // o.rotate(obj.rotate);
           // o.set({"originX": "center", "originY": "center"});
-          o.set({"angle": obj.rotate});
+          o.set({ "angle": obj.rotate });
           // o.set({"originX": "top", "originY": "left"});
           canvas.setActiveObject(o);
         }
@@ -551,6 +551,22 @@ $(window).keydown(function (e) {
       return false;
   }
   return; //using "return" other attached events will execute
+});
+
+// CTRL + C
+$(window).keydown(function (e) {
+  if ((e.metaKey || e.ctrlKey) && ( String.fromCharCode(e.which).toLowerCase() === 'c') ) {
+      console.log( "You pressed CTRL + C" );
+      copy();
+  }
+});
+
+// CTRL + V
+$(window).keydown(function (e) {
+  if ((e.metaKey || e.ctrlKey) && ( String.fromCharCode(e.which).toLowerCase() === 'v') ) {
+      console.log( "You pressed CTRL + V" );
+      paste();
+  }
 });
 
 // Add rectangle on click of button
