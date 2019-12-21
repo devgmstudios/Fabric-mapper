@@ -552,6 +552,7 @@ $(window).keydown(function (e) {
   switch (e.keyCode) {
     case 46: // delete
       var obj = canvas.getActiveObject();
+      removeFromList(obj.id);
       canvas.remove(obj);
       canvas.renderAll();
 
@@ -582,7 +583,7 @@ $(window).keydown(function (e) {
 
 // Add rectangle on click of button
 $("#addRectangle").click(function () {
-  const o = addRect(0, 0, 60, 60)
+  const o = addRect(30, 30, 60, 60)
   canvas.setActiveObject(o)
 });
 
