@@ -355,6 +355,12 @@ function orderChanged() {
   fabricToJSON();
 }
 
+function removeFromList(id) {
+  let itemID = $('*[data-id="' + id + '"]');
+  itemID.remove();
+
+  orderChanged();
+}
 // ************** HANDLE OBJECT ORDERING END ************** //
 
 // ************** HANDLE JSON HERE ************** //
@@ -548,6 +554,9 @@ $(window).keydown(function (e) {
       var obj = canvas.getActiveObject();
       canvas.remove(obj);
       canvas.renderAll();
+
+      fabricToJSON();
+
       return false;
   }
   return; //using "return" other attached events will execute
@@ -555,18 +564,20 @@ $(window).keydown(function (e) {
 
 // CTRL + C
 $(window).keydown(function (e) {
-  if ((e.metaKey || e.ctrlKey) && ( String.fromCharCode(e.which).toLowerCase() === 'c') ) {
-      console.log( "You pressed CTRL + C" );
-      copy();
+  if ((e.metaKey || e.ctrlKey) && (String.fromCharCode(e.which).toLowerCase() === 'c')) {
+    console.log("You pressed CTRL + C");
+    copy();
   }
+  return;
 });
 
 // CTRL + V
 $(window).keydown(function (e) {
-  if ((e.metaKey || e.ctrlKey) && ( String.fromCharCode(e.which).toLowerCase() === 'v') ) {
-      console.log( "You pressed CTRL + V" );
-      paste();
+  if ((e.metaKey || e.ctrlKey) && (String.fromCharCode(e.which).toLowerCase() === 'v')) {
+    console.log("You pressed CTRL + V");
+    paste();
   }
+  return;
 });
 
 // Add rectangle on click of button
@@ -579,6 +590,7 @@ $("#addRectangle").click(function () {
 $("#removeObject").click(function () {
   const o = getSelection()
   if (o.remove) {
+    removeFromList(o.id);
     o.remove();
     canvas.remove(o);
     canvas.discardActiveObject();
@@ -586,6 +598,8 @@ $("#removeObject").click(function () {
 
     $("#heightObj").val("");
     $("#widthObj").val("");
+
+    fabricToJSON();
   }
   else {
     removeObjectFromCanvas(o.id);
