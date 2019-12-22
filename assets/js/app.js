@@ -48,7 +48,9 @@ function initCanvas() {
 
   canvas.on('object:added', function (e) {
     getObjDimensions(e);
-    addToSortableList(e);
+    if(e.target.type == 'rect') {
+      addToSortableList(e);
+    }
     fabricToJSON();
   })
   canvas.on('object:moving', function (e) {
@@ -252,6 +254,10 @@ function paste() {
     _clipboard.left += 10;
     canvas.setActiveObject(clonedObj);
     canvas.requestRenderAll();
+
+    if(clonedObj.type == 'polygon') {
+      addPolygonToSortableList(clonedObj);
+    }
   });
 }
 // ************** HANDLE COPY PASTE END ************** //
@@ -347,7 +353,19 @@ function addToSortableList(obj) {
 
   if(target.type == 'rect') {
     target.item(1).set({ 'text': zindex.toString() });
+    $("#sortable").append('<li class="ui-state-default list-group-item" data-id="' + target.id + '" >' + zindex + '</li>');
+    $("#defaultItem").remove();  
+  }
+}
 
+function addPolygonToSortableList(obj) {
+  target = obj;
+  var zindex = canvas.getObjects().indexOf(target);
+
+  zindex = (zindex) + 1;
+
+  if(target.type == 'polygon') {
+    // target.item(1).set({ 'text': zindex.toString() });
     $("#sortable").append('<li class="ui-state-default list-group-item" data-id="' + target.id + '" >' + zindex + '</li>');
     $("#defaultItem").remove();  
   }
@@ -583,7 +601,7 @@ prototypefabric.polygon = {
     var random = Math.floor(Math.random() * (max - min + 1)) + min;
     var id = generateId();
     var circle = new fabric.Circle({
-      radius: 5,
+      radius: 10,
       fill: '#ffffff',
       stroke: '#333333',
       strokeWidth: 0.5,
@@ -632,8 +650,7 @@ prototypefabric.polygon = {
         hasBorders: true,
         hasControls: true,
         evented: true,
-        objectCaching: false,
-        type: 'polygon'
+        objectCaching: false
       });
       canvas.remove(activeShape);
       canvas.add(polygon);
@@ -651,8 +668,7 @@ prototypefabric.polygon = {
         hasBorders: true,
         hasControls: true,
         evented: true,
-        objectCaching: false,
-        type: 'polygon'
+        objectCaching: false
       });
       activeShape = polygon;
       canvas.add(polygon);
@@ -686,7 +702,6 @@ prototypefabric.polygon = {
       opacity: 1,
       hasBorders: true,
       hasControls: true,
-      type: 'polygon'
     });
     canvas.add(polygon);
 
@@ -694,6 +709,8 @@ prototypefabric.polygon = {
     activeShape = null;
     polygonMode = false;
     canvas.selection = true;
+    polygon.set('type', 'polygon');
+    addPolygonToSortableList(polygon);
   }
 };
 
