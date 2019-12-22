@@ -225,6 +225,7 @@ function paste() {
       left: clonedObj.left + 10,
       top: clonedObj.top + 10,
       evented: true,
+      id: generateId()
     });
     if (clonedObj.type === 'activeSelection') {
       // active selection needs a reference to the canvas.
