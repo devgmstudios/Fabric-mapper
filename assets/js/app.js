@@ -2,6 +2,8 @@ let canvas
 let file
 let bgImg, bgJSON, jsonImport
 
+var polygonMode = false;
+
 const grid = 3;
 const backgroundColor = '#f8f8f8'
 const lineStroke = '#ebebeb'
@@ -80,11 +82,19 @@ function initCanvas() {
     if (canvas.DrawingMode) {
       rectmousedown(e);
     }
+
+    if (polygonMode) {
+      polyMouseDown(e);
+    }
     // getObjDimensions(e);
   });
   canvas.observe('mouse:move', function (e) {
     if (canvas.DrawingMode) {
       rectmousemove(e);
+    }
+
+    if (polygonMode) {
+      polyMouseMove(e);
     }
   });
   canvas.observe('mouse:up', function (e) {
@@ -335,10 +345,12 @@ function addToSortableList(obj) {
 
   zindex = (zindex) + 1;
 
-  target.item(1).set({ 'text': zindex.toString() });
+  if(target.type == 'rect') {
+    target.item(1).set({ 'text': zindex.toString() });
 
-  $("#sortable").append('<li class="ui-state-default list-group-item" data-id="' + target.id + '" >' + zindex + '</li>');
-  $("#defaultItem").remove();
+    $("#sortable").append('<li class="ui-state-default list-group-item" data-id="' + target.id + '" >' + zindex + '</li>');
+    $("#defaultItem").remove();  
+  }
 }
 
 function orderChanged() {
@@ -548,6 +560,171 @@ function getSelection() {
   return aOG;
 };
 
+// ************** HANDLE POLYGON HERE ************** //
+
+var min = 99;
+var max = 999999;
+var pointArray = new Array();
+var lineArray = new Array();
+var activeLine;
+var activeShape = false;
+
+var prototypefabric = new function () {};
+
+// POLYGON PROTOTYPE
+prototypefabric.polygon = {
+  drawPolygon: function () {
+    polygonMode = true;
+    pointArray = new Array();
+    lineArray = new Array();
+    activeLine;
+  },
+  addPoint: function (options) {
+    var random = Math.floor(Math.random() * (max - min + 1)) + min;
+    var id = generateId();
+    var circle = new fabric.Circle({
+      radius: 5,
+      fill: '#ffffff',
+      stroke: '#333333',
+      strokeWidth: 0.5,
+      left: (options.e.layerX / canvas.getZoom()),
+      top: (options.e.layerY / canvas.getZoom()),
+      selectable: true,
+      hasBorders: true,
+      hasControls: true,
+      originX: 'center',
+      originY: 'center',
+      id: id,
+      objectCaching: false
+    });
+    if (pointArray.length == 0) {
+      circle.set({
+        fill: tableFill
+      })
+    }
+    var points = [(options.e.layerX / canvas.getZoom()), (options.e.layerY / canvas.getZoom()), (options.e.layerX / canvas.getZoom()), (options.e.layerY / canvas.getZoom())];
+    line = new fabric.Line(points, {
+      strokeWidth: 2,
+      fill: '#999999',
+      stroke: '#999999',
+      class: 'line',
+      originX: 'center',
+      originY: 'center',
+      selectable: true,
+      hasBorders: true,
+      hasControls: true,
+      evented: true,
+      objectCaching: false
+    });
+    if (activeShape) {
+      var pos = canvas.getPointer(options.e);
+      var points = activeShape.get("points");
+      points.push({
+        x: pos.x,
+        y: pos.y
+      });
+      var polygon = new fabric.Polygon(points, {
+        stroke: '#333333',
+        strokeWidth: 1,
+        fill: '#cccccc',
+        opacity: 0.3,
+        selectable: true,
+        hasBorders: true,
+        hasControls: true,
+        evented: true,
+        objectCaching: false,
+        type: 'polygon'
+      });
+      canvas.remove(activeShape);
+      canvas.add(polygon);
+      activeShape = polygon;
+      canvas.renderAll();
+    }
+    else {
+      var polyPoint = [{ x: (options.e.layerX / canvas.getZoom()), y: (options.e.layerY / canvas.getZoom()) }];
+      var polygon = new fabric.Polygon(polyPoint, {
+        stroke: '#333333',
+        strokeWidth: 1,
+        fill: '#cccccc',
+        opacity: 0.3,
+        selectable: true,
+        hasBorders: true,
+        hasControls: true,
+        evented: true,
+        objectCaching: false,
+        type: 'polygon'
+      });
+      activeShape = polygon;
+      canvas.add(polygon);
+    }
+    activeLine = line;
+
+    pointArray.push(circle);
+    lineArray.push(line);
+
+    canvas.add(line);
+    canvas.add(circle);
+    canvas.selection = false;
+  },
+  generatePolygon: function (pointArray) {
+    var points = new Array();
+    $.each(pointArray, function (index, point) {
+      points.push({
+        x: point.left,
+        y: point.top
+      });
+      canvas.remove(point);
+    });
+    $.each(lineArray, function (index, line) {
+      canvas.remove(line);
+    });
+    canvas.remove(activeShape).remove(activeLine);
+    var polygon = new fabric.Polygon(points, {
+      stroke: '#333333',
+      strokeWidth: 0.5,
+      fill: 'red',
+      opacity: 1,
+      hasBorders: true,
+      hasControls: true,
+      type: 'polygon'
+    });
+    canvas.add(polygon);
+
+    activeLine = null;
+    activeShape = null;
+    polygonMode = false;
+    canvas.selection = true;
+  }
+};
+
+function polyMouseDown(options) {
+  if (options.target && options.target.id == pointArray[0].id) {
+    prototypefabric.polygon.generatePolygon(pointArray);
+  }
+  if (polygonMode) {
+    prototypefabric.polygon.addPoint(options);
+  }
+}
+
+function polyMouseMove(options) {
+  if (activeLine && activeLine.class == "line") {
+    var pointer = canvas.getPointer(options.e);
+    activeLine.set({ x2: pointer.x, y2: pointer.y });
+
+    var points = activeShape.get("points");
+    points[pointArray.length] = {
+      x: pointer.x,
+      y: pointer.y
+    }
+    activeShape.set({
+      points: points
+    });
+    canvas.renderAll();
+  }
+  canvas.renderAll();
+}
+
+// ************** HANDLE POLYGON END ************** //
 // For delete handling via button 
 $(window).keydown(function (e) {
   switch (e.keyCode) {
@@ -610,6 +787,7 @@ $("#removeObject").click(function () {
 
 $("#select").click(function () {
   canvas.DrawingMode = false;
+  polygonMode = false;
 });
 
 $("#draw").click(function () {
@@ -652,6 +830,10 @@ $("#submitJSON").click(function () {
   data = $("#jsonInput").val();
   JSONToFabric(data);
   $("#jsonModal").modal('hide');
+});
+
+$("#drawPolygon").click(function () {
+  polygonMode = true;
 });
 
 // Handle item sorting

@@ -1,3 +1,4 @@
 samples/
 *.code-workspace
 info/
+assets/js/polygon.js
