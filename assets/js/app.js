@@ -48,10 +48,10 @@ function initCanvas() {
 
   canvas.on('object:added', function (e) {
     getObjDimensions(e);
-    if(e.target.type == 'rect') {
+    if (e.target.type == 'rect') {
       addToSortableList(e);
+      fabricToJSON();
     }
-    fabricToJSON();
   })
   canvas.on('object:moving', function (e) {
     getObjDimensions(e);
@@ -255,7 +255,7 @@ function paste() {
     canvas.setActiveObject(clonedObj);
     canvas.requestRenderAll();
 
-    if(clonedObj.type == 'polygon') {
+    if (clonedObj.type == 'polygon') {
       addPolygonToSortableList(clonedObj);
     }
   });
@@ -307,7 +307,9 @@ function rectmousedown(e) {
     lockRotation: false,
     id: id,
     number: zindex,
-    type: 'rect'
+    type: 'rect',
+    originX: 'center',
+    originY: 'center'
   });
 
 }
@@ -335,6 +337,9 @@ function rectmouseup(e) {
   isDown = false;
   canvas.add(rect);
 
+  rect.set({left: rect.left + (rect.width / 2)})
+  rect.set({top: rect.top + (rect.height / 2)})
+
   rect.setCoords();
   canvas.renderAll();
 
@@ -351,10 +356,10 @@ function addToSortableList(obj) {
 
   zindex = (zindex) + 1;
 
-  if(target.type == 'rect') {
+  if (target.type == 'rect') {
     target.item(1).set({ 'text': zindex.toString() });
     $("#sortable").append('<li class="ui-state-default list-group-item" data-id="' + target.id + '" >' + zindex + '</li>');
-    $("#defaultItem").remove();  
+    $("#defaultItem").remove();
   }
 }
 
@@ -364,10 +369,10 @@ function addPolygonToSortableList(obj) {
 
   zindex = (zindex) + 1;
 
-  if(target.type == 'polygon') {
+  if (target.type == 'polygon') {
     // target.item(1).set({ 'text': zindex.toString() });
     $("#sortable").append('<li class="ui-state-default list-group-item" data-id="' + target.id + '" >' + zindex + '</li>');
-    $("#defaultItem").remove();  
+    $("#defaultItem").remove();
   }
 }
 
@@ -403,7 +408,7 @@ function gcd(a, b) {
 
 function fabricToJSON() {
 
-  // Needs to be modified to handle imports
+  // Modified to handle imports
   if (bgJSON) {
 
     frameRatio = jsonImport.details[0].frameSize.split('x');
@@ -424,19 +429,26 @@ function fabricToJSON() {
       heightObj = Math.round(target.height * target.scaleY * heightRatio);
       widthObj = Math.round(target.width * target.scaleX * widthRatio);
 
-      objLeft = Math.abs(Math.round(o.left * widthRatio) - (widthObj / 2));
-      objTop = Math.abs(Math.round(o.top * heightRatio) - (heightObj / 2));
-      objRight = Math.abs(Math.round((o.left + o.width) * widthRatio) - (widthObj / 2));
-      objBottom = Math.abs(Math.round((o.top + o.height) * heightRatio) - (heightObj / 2));
+      if (target.type == 'rect') {
+        objLeft = Math.abs(Math.round(o.left * widthRatio) - (widthObj / 2));
+        objTop = Math.abs(Math.round(o.top * heightRatio) - (heightObj / 2));
+        objRight = Math.abs(Math.round((o.left + o.width) * widthRatio) - (widthObj / 2));
+        objBottom = Math.abs(Math.round((o.top + o.height) * heightRatio) - (heightObj / 2));
 
-      baseJSON.areas.push({
-        order: canvas.getObjects().indexOf(o) + 1,
-        width: widthObj,
-        height: heightObj,
-        coords: objLeft + "," + objTop + "," + objRight + "," + objBottom,
-        shape: o.type,
-        rotate: o.get('angle')
-      });
+        baseJSON.areas.push({
+          order: canvas.getObjects().indexOf(o) + 1,
+          width: widthObj,
+          height: heightObj,
+          coords: objLeft + "," + objTop + "," + objRight + "," + objBottom,
+          shape: o.type,
+          rotate: o.get('angle')
+        });
+      } else {
+
+        let transformedPoints = o.get("points");
+
+      }
+
     });
 
     $("#jsonOutput").val(JSON.stringify(baseJSON, null, 2));
@@ -473,19 +485,54 @@ function fabricToJSON() {
       heightObj = Math.round(target.height * target.scaleY * heightRatio);
       widthObj = Math.round(target.width * target.scaleX * widthRatio);
 
-      objLeft = Math.abs(Math.round(o.left * widthRatio) - (widthObj / 2));
-      objTop = Math.abs(Math.round(o.top * heightRatio) - (heightObj / 2));
-      objRight = Math.abs(Math.round((o.left + o.width) * widthRatio) - (widthObj / 2));
-      objBottom = Math.abs(Math.round((o.top + o.height) * heightRatio) - (heightObj / 2));
+      if (target.type == 'rect') {
+        objLeft = Math.round(Math.abs(Math.round(o.left * widthRatio) - (widthObj / 2)));
+        objTop = Math.round(Math.abs(Math.round(o.top * heightRatio) - (heightObj / 2)));
+        objRight = Math.round(Math.abs(Math.round((o.left + o.width) * widthRatio) - (widthObj / 2)));
+        objBottom = Math.round(Math.abs(Math.round((o.top + o.height) * heightRatio) - (heightObj / 2)));
 
-      baseJSON.areas.push({
-        order: canvas.getObjects().indexOf(o) + 1,
-        width: widthObj,
-        height: heightObj,
-        coords: objLeft + "," + objTop + "," + objRight + "," + objBottom,
-        shape: o.type,
-        rotate: o.get('angle')
-      });
+        baseJSON.areas.push({
+          order: canvas.getObjects().indexOf(o) + 1,
+          width: widthObj,
+          height: heightObj,
+          coords: objLeft + "," + objTop + "," + objRight + "," + objBottom,
+          shape: o.type,
+          rotate: o.get('angle')
+        });
+      } else {
+        
+        let matrix = o.calcTransformMatrix();
+        let transformedPoints = o.get("points")
+            .map(function(p){
+              return new fabric.Point(
+                p.x - o.pathOffset.x,
+                p.y - o.pathOffset.y);              
+            })
+            .map(function(p){
+              return fabric.util.transformPoint(p, matrix);
+            });
+        
+        let polyPoints = []
+        transformedPoints.map(function(p){
+          let points = {
+            "x": Math.round(p.x * widthRatio),
+            "y": Math.round(p.y * heightRatio)
+          };
+          polyPoints.push(points);
+        });
+
+        baseJSON.areas.push({
+          order: canvas.getObjects().indexOf(o) + 1,
+          width: widthObj,
+          height: heightObj,
+          coords: polyPoints,
+          shape: o.type,
+          rotate: o.get('angle')
+        });
+
+      }
+
+
     });
 
     $("#jsonOutput").val(JSON.stringify(baseJSON, null, 2));
@@ -587,7 +634,7 @@ var lineArray = new Array();
 var activeLine;
 var activeShape = false;
 
-var prototypefabric = new function () {};
+var prototypefabric = new function () { };
 
 // POLYGON PROTOTYPE
 prototypefabric.polygon = {
@@ -713,6 +760,7 @@ prototypefabric.polygon = {
     canvas.selection = true;
     polygon.set('type', 'polygon');
     addPolygonToSortableList(polygon);
+    fabricToJSON();
   }
 };
 
