@@ -515,8 +515,8 @@ function JSONToFabric(data) {
 
     bgJSON = backgroundImage;
     jsonImport = parsed;
-    widthRatio = Math.round((parsed.details[0].width / canvas.width) * 100) / 100;
-    heightRatio = Math.round((parsed.details[0].height / canvas.height) * 100) / 100;
+    widthRatio = Math.round((parsed.details[0].width / canvas.width));
+    heightRatio = Math.round((parsed.details[0].height / canvas.height));
 
     if (parsed.areas) {
       cvObjects = parsed.areas;
@@ -702,6 +702,8 @@ prototypefabric.polygon = {
       opacity: 1,
       hasBorders: true,
       hasControls: true,
+      originX: "center",
+      originY: "center"
     });
     canvas.add(polygon);
 
