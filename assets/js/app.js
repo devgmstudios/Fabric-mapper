@@ -337,8 +337,8 @@ function rectmouseup(e) {
   isDown = false;
   canvas.add(rect);
 
-  rect.set({left: rect.left + (rect.width / 2)})
-  rect.set({top: rect.top + (rect.height / 2)})
+  rect.set({ left: rect.left + (rect.width / 2) })
+  rect.set({ top: rect.top + (rect.height / 2) })
 
   rect.setCoords();
   canvas.renderAll();
@@ -444,8 +444,34 @@ function fabricToJSON() {
           rotate: o.get('angle')
         });
       } else {
+        let matrix = o.calcTransformMatrix();
+        let transformedPoints = o.get("points")
+          .map(function (p) {
+            return new fabric.Point(
+              p.x,
+              p.y);
+          })
+          .map(function (p) {
+            return fabric.util.transformPoint(p, matrix);
+          });
 
-        let transformedPoints = o.get("points");
+        let polyPoints = []
+        transformedPoints.map(function (p) {
+          let points = {
+            "x": Math.round(p.x * widthRatio - (o.width / 2)),
+            "y": Math.round(p.y * heightRatio - (o.height / 2))
+          };
+          polyPoints.push(points);
+        });
+
+        baseJSON.areas.push({
+          order: canvas.getObjects().indexOf(o) + 1,
+          width: widthObj,
+          height: heightObj,
+          coords: polyPoints,
+          shape: o.type,
+          rotate: o.get('angle')
+        });
 
       }
 
@@ -500,23 +526,23 @@ function fabricToJSON() {
           rotate: o.get('angle')
         });
       } else {
-        
+
         let matrix = o.calcTransformMatrix();
         let transformedPoints = o.get("points")
-            .map(function(p){
-              return new fabric.Point(
-                p.x - o.pathOffset.x,
-                p.y - o.pathOffset.y);              
-            })
-            .map(function(p){
-              return fabric.util.transformPoint(p, matrix);
-            });
-        
+          .map(function (p) {
+            return new fabric.Point(
+              p.x - o.pathOffset.x,
+              p.y - o.pathOffset.y);
+          })
+          .map(function (p) {
+            return fabric.util.transformPoint(p, matrix);
+          });
+
         let polyPoints = []
-        transformedPoints.map(function(p){
+        transformedPoints.map(function (p) {
           let points = {
-            "x": Math.round(p.x * widthRatio),
-            "y": Math.round(p.y * heightRatio)
+            "x": Math.round(p.x * widthRatio - (o.width / 2)),
+            "y": Math.round(p.y * heightRatio - (o.height / 2) )
           };
           polyPoints.push(points);
         });
@@ -583,6 +609,38 @@ function JSONToFabric(data) {
           o.set({ "angle": obj.rotate });
           // o.set({"originX": "top", "originY": "left"});
           canvas.setActiveObject(o);
+        } else if(obj.shape == "polygon") {
+          objWidth = ((obj.width) / widthRatio);
+          objHeight = ((obj.height) / heightRatio);
+
+          let coordinates = obj.coords;
+          let polyPointsArray = []
+
+          coordinates.map(function(p){
+            let points = {
+              x: (p.x / widthRatio) + (objWidth / 2),
+              y: (p.y / heightRatio) + (objHeight / 2),
+            }
+
+            polyPointsArray.push(points);
+          });
+
+          var polygon = new fabric.Polygon(polyPointsArray, {
+            stroke: '#333333',
+            strokeWidth: 0.5,
+            fill: 'red',
+            opacity: 1,
+            hasBorders: true,
+            hasControls: true,
+            originX: "center",
+            originY: "center"
+          });
+          canvas.add(polygon);
+          polygon.set({ "angle": obj.rotate });
+          // o.set({"originX": "top", "originY": "left"});
+          canvas.setActiveObject(polygon);
+          
+          canvas.renderAll();
         }
       });
       canvas.renderAll();
