@@ -537,8 +537,8 @@ function fabricToJSON() {
     canvas.getObjects().forEach(function (o) {
 
       let target = o;
-      heightObj = Math.round(target.height * target.scaleY * heightRatio);
-      widthObj = Math.round(target.width * target.scaleX * widthRatio);
+      let heightObj = Math.round(target.height * target.scaleY * heightRatio);
+      let widthObj = Math.round(target.width * target.scaleX * widthRatio);
 
       if (target.type == 'rect') {
         objLeft = Math.round(o.left * widthRatio) - (widthObj / 2);
