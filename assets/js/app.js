@@ -307,7 +307,9 @@ function rectmousedown(e) {
     lockRotation: false,
     id: id,
     number: zindex,
-    type: 'rect'
+    type: 'rect',
+    originX: 'center',
+    originY: 'center'
   });
 
 }
@@ -333,6 +335,10 @@ function rectmousemove(e) {
 
 function rectmouseup(e) {
   isDown = false;
+
+  rect.set({ left: rect.left + (rect.width / 2) });
+  rect.set({ top: rect.top + (rect.height / 2) });
+
   canvas.add(rect);
 
   rect.setCoords();
