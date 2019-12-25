@@ -431,10 +431,10 @@ function fabricToJSON() {
       widthObj = Math.round(target.width * target.scaleX * widthRatio);
 
       if (target.type == 'rect') {
-        objLeft = Math.round(Math.abs(Math.round(o.left * widthRatio) - (widthObj / 2)));
-        objTop = Math.round(Math.abs(Math.round(o.top * heightRatio) - (heightObj / 2)));
-        objRight = Math.round(Math.abs(Math.round((o.left + o.width) * widthRatio) - (widthObj / 2)));
-        objBottom = Math.round(Math.abs(Math.round((o.top + o.height) * heightRatio) - (heightObj / 2)));
+        objLeft = Math.round(o.left * widthRatio) - (widthObj / 2);
+        objTop = Math.round(o.top * heightRatio) - (heightObj / 2);
+        objRight = Math.round((o.left + o.width) * widthRatio) - (widthObj / 2);
+        objBottom = Math.round((o.top + o.height) * heightRatio) - (heightObj / 2);
 
         baseJSON.areas.push({
           order: canvas.getObjects().indexOf(o) + 1,
@@ -463,8 +463,8 @@ function fabricToJSON() {
         let polyPoints = []
         transformedPoints.map(function (p) {
           let points = {
-            "x": Math.round(p.x * widthRatio - (o.width / 2)),
-            "y": Math.round(p.y * heightRatio - (o.height / 2))
+            "x": Math.round((p.x * widthRatio) - (o.width / 2)),
+            "y": Math.round((p.y * heightRatio) - (o.height / 2))
           };
           polyPoints.push(points);
         });
@@ -515,10 +515,10 @@ function fabricToJSON() {
       widthObj = Math.round(target.width * target.scaleX * widthRatio);
 
       if (target.type == 'rect') {
-        objLeft = Math.round(Math.abs(Math.round(o.left * widthRatio) - (widthObj / 2)));
-        objTop = Math.round(Math.abs(Math.round(o.top * heightRatio) - (heightObj / 2)));
-        objRight = Math.round(Math.abs(Math.round((o.left + o.width) * widthRatio) - (widthObj / 2)));
-        objBottom = Math.round(Math.abs(Math.round((o.top + o.height) * heightRatio) - (heightObj / 2)));
+        objLeft = Math.round(o.left * widthRatio) - (widthObj / 2);
+        objTop = Math.round(o.top * heightRatio) - (heightObj / 2);
+        objRight = Math.round((o.left + o.width) * widthRatio) - (widthObj / 2);
+        objBottom = Math.round((o.top + o.height) * heightRatio) - (heightObj / 2);
 
         baseJSON.areas.push({
           order: canvas.getObjects().indexOf(o) + 1,
@@ -547,8 +547,8 @@ function fabricToJSON() {
         let polyPoints = []
         transformedPoints.map(function (p) {
           let points = {
-            "x": Math.round(p.x * widthRatio - (o.width / 2)),
-            "y": Math.round(p.y * heightRatio - (o.height / 2))
+            "x": Math.round((p.x * widthRatio) - (o.width / 2)),
+            "y": Math.round((p.y * heightRatio) - (o.height / 2))
           };
           polyPoints.push(points);
         });
@@ -598,12 +598,12 @@ function JSONToFabric(data) {
 
       cvObjects.forEach(function (obj) {
         if (obj.shape == "rect") {
-          objWidth = ((obj.width) / widthRatio);
-          objHeight = ((obj.height) / heightRatio);
+          let objWidth = ((obj.width) / widthRatio);
+          let objHeight = ((obj.height) / heightRatio);
 
-          coordinates = obj.coords.split(",");
-          objLeft = (coordinates[0] / widthRatio) + (objWidth / 2);
-          objTop = (coordinates[1] / heightRatio) + (objHeight / 2);
+          let coordinates = obj.coords.split(",");
+          let objLeft = (coordinates[0] / widthRatio) + (objWidth / 2);
+          let objTop = (coordinates[1] / heightRatio) + (objHeight / 2);
 
           const o = addRect(objLeft, objTop, objWidth, objHeight);
           // o.rotate(obj.rotate);
@@ -611,6 +611,39 @@ function JSONToFabric(data) {
           o.set({ "angle": obj.rotate });
           // o.set({"originX": "top", "originY": "left"});
           canvas.setActiveObject(o);
+        }
+        else if (obj.shape == "polygon") {
+          let objWidth = ((obj.width) / widthRatio);
+          let objHeight = ((obj.height) / heightRatio);
+
+          let coordinates = obj.coords;
+          let polyPointsArray = []
+
+          coordinates.map(function (p) {
+            let points = {
+              x: (p.x / widthRatio) + (objWidth / 2),
+              y: (p.y / heightRatio) + (objHeight / 2),
+            }
+
+            polyPointsArray.push(points);
+          });
+
+          let polygon = new fabric.Polygon(polyPointsArray, {
+            stroke: '#333333',
+            strokeWidth: 0.5,
+            fill: 'red',
+            opacity: 1,
+            hasBorders: true,
+            hasControls: true,
+            originX: "center",
+            originY: "center"
+          });
+          canvas.add(polygon);
+          polygon.set({ "angle": obj.rotate });
+          // o.set({"originX": "top", "originY": "left"});
+          canvas.setActiveObject(polygon);
+
+          canvas.renderAll();
         }
       });
       canvas.renderAll();
