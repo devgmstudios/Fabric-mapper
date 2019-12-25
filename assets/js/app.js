@@ -3,6 +3,7 @@ let file
 let bgImg, bgJSON, jsonImport
 
 var polygonMode = false;
+var polygonMove = false;
 
 const grid = 3;
 const backgroundColor = '#f8f8f8'
@@ -52,8 +53,14 @@ function initCanvas() {
       addToSortableList(e);
       fabricToJSON();
     }
+    else {
+      polygonMove = false;
+    }
   })
   canvas.on('object:moving', function (e) {
+    if (e.target.type == 'polygon') {
+      polygonMove = true;
+    }
     getObjDimensions(e);
     fabricToJSON();
   })
@@ -450,22 +457,41 @@ function fabricToJSON() {
         polyTarget = target;
 
         let matrix = polyTarget.calcTransformMatrix();
-        let transformedPoints = polyTarget.get("points")
-          .map(function (p) {
-            return new fabric.Point(
-              p.x,
-              p.y);
-          })
-          .map(function (p) {
-            return fabric.util.transformPoint(p, matrix);
-          });
+        let transformedPoints;
+        if (polygonMove) {
+          transformedPoints = polyTarget.get("points")
+            .map(function (p) {
+              return new fabric.Point(p.x - polyTarget.pathOffset.x, p.y - polyTarget.pathOffset.y);
+            })
+            .map(function (p) {
+              return fabric.util.transformPoint(p, matrix);
+            });
+        } else {
+          transformedPoints = polyTarget.get("points")
+            .map(function (p) {
+              return new fabric.Point(p.x, p.y);
+            })
+            .map(function (p) {
+              return fabric.util.transformPoint(p, matrix);
+            });
+        }
 
         let polyPoints = []
         transformedPoints.map(function (p) {
-          let points = {
-            "x": Math.round((p.x * widthRatio) - (o.width / 2)),
-            "y": Math.round((p.y * heightRatio) - (o.height / 2))
-          };
+          let points;
+
+          if (polygonMove) {
+            points = {
+              "x": Math.round((p.x) * widthRatio + (widthObj / 2)),
+              "y": Math.round((p.y) * heightRatio + (heightObj / 2))
+            };
+          } else {
+            points = {
+              "x": Math.round((p.x)),
+              "y": Math.round((p.y))
+            };
+          }
+
           polyPoints.push(points);
         });
 
@@ -534,22 +560,41 @@ function fabricToJSON() {
         polyTarget = target;
 
         let matrix = polyTarget.calcTransformMatrix();
-        let transformedPoints = polyTarget.get("points")
-          .map(function (p) {
-            return new fabric.Point(
-              p.x,
-              p.y);
-          })
-          .map(function (p) {
-            return fabric.util.transformPoint(p, matrix);
-          });
+        let transformedPoints;
+        if (polygonMove) {
+          transformedPoints = polyTarget.get("points")
+            .map(function (p) {
+              return new fabric.Point(p.x - polyTarget.pathOffset.x, p.y - polyTarget.pathOffset.y);
+            })
+            .map(function (p) {
+              return fabric.util.transformPoint(p, matrix);
+            });
+        } else {
+          transformedPoints = polyTarget.get("points")
+            .map(function (p) {
+              return new fabric.Point(p.x, p.y);
+            })
+            .map(function (p) {
+              return fabric.util.transformPoint(p, matrix);
+            });
+        }
 
         let polyPoints = []
         transformedPoints.map(function (p) {
-          let points = {
-            "x": Math.round((p.x * widthRatio) - (o.width / 2)),
-            "y": Math.round((p.y * heightRatio) - (o.height / 2))
-          };
+          let points;
+
+          if (polygonMove) {
+            points = {
+              "x": Math.round((p.x) * widthRatio + (widthObj / 2)),
+              "y": Math.round((p.y) * heightRatio + (heightObj / 2))
+            };
+          } else {
+            points = {
+              "x": Math.round((p.x)),
+              "y": Math.round((p.y))
+            };
+          }
+
           polyPoints.push(points);
         });
 
@@ -562,6 +607,7 @@ function fabricToJSON() {
           rotate: polyTarget.get('angle')
         });
       }
+
     });
 
     $("#jsonOutput").val(JSON.stringify(baseJSON, null, 2));
@@ -590,8 +636,8 @@ function JSONToFabric(data) {
 
     bgJSON = backgroundImage;
     jsonImport = parsed;
-    widthRatio = Math.round((parsed.details[0].width / canvas.width) * 100) / 100;
-    heightRatio = Math.round((parsed.details[0].height / canvas.height) * 100) / 100;
+    let widthRatio = Math.round((parsed.details[0].width / canvas.width) * 100) / 100;
+    let heightRatio = Math.round((parsed.details[0].height / canvas.height) * 100) / 100;
 
     if (parsed.areas) {
       cvObjects = parsed.areas;
@@ -617,16 +663,22 @@ function JSONToFabric(data) {
           let objHeight = ((obj.height) / heightRatio);
 
           let coordinates = obj.coords;
-          let polyPointsArray = []
+          let polyPointsArray = new Array();
 
           coordinates.map(function (p) {
+
+            let obLeft = Math.round((p.x / widthRatio) - (objWidth / 2));
+            let obTop = Math.round((p.y / heightRatio) - (objHeight / 2));
+
             let points = {
-              x: (p.x / widthRatio) + (objWidth / 2),
-              y: (p.y / heightRatio) + (objHeight / 2),
+              x: obLeft,
+              y: obTop,
             }
 
             polyPointsArray.push(points);
           });
+
+          console.log(polyPointsArray);
 
           let polygon = new fabric.Polygon(polyPointsArray, {
             stroke: '#333333',
@@ -634,13 +686,10 @@ function JSONToFabric(data) {
             fill: 'red',
             opacity: 1,
             hasBorders: true,
-            hasControls: true,
-            originX: "center",
-            originY: "center"
+            hasControls: true
           });
           canvas.add(polygon);
           polygon.set({ "angle": obj.rotate });
-          // o.set({"originX": "top", "originY": "left"});
           canvas.setActiveObject(polygon);
 
           canvas.renderAll();
