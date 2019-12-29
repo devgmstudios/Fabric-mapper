@@ -541,10 +541,10 @@ function fabricToJSON() {
       let widthObj = Math.round(target.width * target.scaleX * widthRatio);
 
       if (target.type == 'rect') {
-        objLeft = Math.round(o.left * widthRatio) - (widthObj / 2);
-        objTop = Math.round(o.top * heightRatio) - (heightObj / 2);
-        objRight = Math.round((o.left + o.width) * widthRatio) - (widthObj / 2);
-        objBottom = Math.round((o.top + o.height) * heightRatio) - (heightObj / 2);
+        objLeft = Math.round((o.left * widthRatio) - (widthObj / 2));
+        objTop = Math.round((o.top * heightRatio) - (heightObj / 2));
+        objRight = Math.round(((o.left + o.width) * widthRatio) - (widthObj / 2));
+        objBottom = Math.round(((o.top + o.height) * heightRatio) - (heightObj / 2));
 
         baseJSON.areas.push({
           order: canvas.getObjects().indexOf(o) + 1,
