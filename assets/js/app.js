@@ -980,21 +980,28 @@ $("#paste").click(function () {
 $("#bringToFront").click(function () {
   const o = getSelection();
   canvas.bringToFront(o);
+  orderChanged();
 });
 
 $("#bringForward").click(function () {
   const o = getSelection();
   canvas.bringForward(o);
+  orderChanged();
+
 });
 
 $("#sendBackwards").click(function () {
   const o = getSelection();
   canvas.sendBackwards(o);
+  orderChanged();
+
 });
 
 $("#sendToBack").click(function () {
   const o = getSelection();
   canvas.sendToBack(o);
+  orderChanged();
+
 });
 
 $("#changeOrder").click(function () {
