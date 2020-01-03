@@ -424,8 +424,8 @@ function fabricToJSON() {
       details: [{
         frameSize: jsonImport.details[0].frameSize,
         fileName: jsonImport.details[0].fileName,
-        width: jsonImport.details[0].width,
-        height: jsonImport.details[0].height
+        width: (jsonImport.details[0].width).toString(),
+        height: (jsonImport.details[0].height).toString()
       }],
       areas: []
     }
@@ -444,12 +444,12 @@ function fabricToJSON() {
         objBottom = Math.round(((o.top + o.height) * heightRatio) - (heightObj / 2));
 
         baseJSON.areas.push({
-          order: canvas.getObjects().indexOf(o) + 1,
-          width: widthObj,
-          height: heightObj,
-          coords: objLeft + "," + objTop + "," + objRight + "," + objBottom,
-          shape: o.type,
-          rotate: o.get('angle')
+          order: (canvas.getObjects().indexOf(o) + 1).toString(),
+          width: (widthObj).toString(),
+          height: (heightObj).toString(),
+          coords: (objLeft + "," + objTop + "," + objRight + "," + objBottom).toString(),
+          shape: (o.type).toString(),
+          rotate: (o.get('angle')).toString()
         });
       }
       else {
@@ -496,12 +496,12 @@ function fabricToJSON() {
         });
 
         baseJSON.areas.push({
-          order: canvas.getObjects().indexOf(polyTarget) + 1,
-          width: widthObj,
-          height: heightObj,
+          order: (canvas.getObjects().indexOf(polyTarget) + 1).toString(),
+          width: (widthObj).toString(),
+          height: (heightObj).toString(),
           coords: polyPoints,
           shape: polyTarget.type,
-          rotate: polyTarget.get('angle')
+          rotate: (polyTarget.get('angle')).toString()
         });
       }
     });
@@ -528,8 +528,8 @@ function fabricToJSON() {
       details: [{
         frameSize: frameWidth + "x" + frameHeight,
         fileName: "https://data.creatorpresets.com/api/" + fileName,
-        width: width,
-        height: height
+        width: (width).toString(),
+        height: (height).toString()
       }],
       areas: []
     }
@@ -547,12 +547,12 @@ function fabricToJSON() {
         objBottom = Math.round(((o.top + o.height) * heightRatio) - (heightObj / 2));
 
         baseJSON.areas.push({
-          order: canvas.getObjects().indexOf(o) + 1,
-          width: widthObj,
-          height: heightObj,
+          order: (canvas.getObjects().indexOf(o) + 1).toString(),
+          width: (widthObj).toString(),
+          height: (heightObj).toString(),
           coords: objLeft + "," + objTop + "," + objRight + "," + objBottom,
           shape: o.type,
-          rotate: o.get('angle')
+          rotate: (o.get('angle')).toString()
         });
       }
       else {
@@ -599,12 +599,12 @@ function fabricToJSON() {
         });
 
         baseJSON.areas.push({
-          order: canvas.getObjects().indexOf(polyTarget) + 1,
-          width: widthObj,
-          height: heightObj,
+          order: (canvas.getObjects().indexOf(polyTarget) + 1).toString(),
+          width: (widthObj).toString(),
+          height: (heightObj).toString(),
           coords: polyPoints,
           shape: polyTarget.type,
-          rotate: polyTarget.get('angle')
+          rotate: (polyTarget.get('angle')).toString()
         });
       }
 
